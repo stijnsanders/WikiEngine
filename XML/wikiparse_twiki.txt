@@ -1,0 +1,744 @@
+%INCLUDE{DistributionDocHeader}%
+%STARTSECTION{"distributiondoc"}%
+%TOC{depth="4"}%
+%STARTINCLUDE%
+---# TWiki Text Formatting
+
+Working in TWiki is as easy as typing in text - *exactly like email*. You don't need to know HTML, though you can use it if you prefer. Links to topics are created automatically when you enter WikiWords. And TWiki shorthand gives you all the power of HTML with a simple coding system that takes no time to learn. It's all laid out below - refer back to this page in a pop-up window from the *Edit* screen.
+
+#TWikiShorthand
+---++ TWiki Editing Shorthand
+
+<table border="1" cellpadding="3" cellspacing="1" bgcolor="#000000">
+<tr bgcolor="#ffffff">
+<td>
+ *Formatting Command:*
+</td><td>
+ *Example: You write:*
+</td><td>
+ *You get:*
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Paragraphs:* %BR%
+ Blank lines will create new paragraphs.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+1st paragraph
+
+2nd paragraph
+</pre>
+</font></span>
+</td><td valign="top">
+1st paragraph
+
+2nd paragraph
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Headings:* %BR%
+ At least three dashes at the beginning of a line, followed by plus signs and the heading text. One plus creates a level 1 heading (most important), two pluses a level 2 heading; the maximum is level 6. __Note:__ A Table of Content can be created automatically with the =%<nop>TOC%= variable, see TWikiVariables. Any heading text after =!!= is excluded from the TOC; for example, write =---+!! text= if you do not want to list a header in the TOC.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+<nop>---++ Sushi
+
+<nop>---+++ Maguro
+</pre>
+</font></span>
+</td><td valign="top">
+<h2 >Sushi</h2>
+
+<h3 >Maguro</h3>
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Bold Text:* %BR%
+ Words get *bold* by enclosing them in =*= asterisks.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+*Bold*
+</pre>
+</font></span>
+</td><td valign="top">
+*Bold*
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Italic Text:* %BR%
+ Words get _italic_ by enclosing them in =_= underscores.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+_Italic_
+</pre>
+</font></span>
+</td><td valign="top">
+_Italic_
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Bold Italic:* %BR%
+ Words get __bold italic_ by enclosing them in =_= double-underscores.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+__Bold italic__
+</pre>
+</font></span>
+</td><td valign="top">
+__Bold italic__
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Fixed Font:* %BR%
+ Words get shown in =fixed font= by enclosing them in =<nop>=<nop>= equal signs.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+=Fixed font=
+</pre>
+</font></span>
+</td><td valign="top">
+=Fixed font=
+
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Bold Fixed Font:* %BR%
+ Words get shown in ==bold fixed font== by enclosing them in ==<nop>== double equal signs.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+==Bold fixed==
+</pre>
+</font></span>
+</td><td valign="top">
+==Bold fixed==
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ __Note:__ Make sure there is no space between the text and the bold, italic, or other indicators (=* _ __ = ===).
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+_This works_,
+_this not _
+</pre>
+</font></span>
+</td><td valign="top">
+_This works_,%BR%
+_this not _
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Verbatim Mode:* %BR%
+ Surround code excerpts and other formatted text with =&lt;verbatim&gt;= and =&lt;/verbatim&gt;= tags. %BR% __Note:__ Use =&lt;pre&gt;= and =&lt;/pre&gt;= tags instead if you want that HTML code is interpreted. %BR% __Note:__ Each tag must be on a line by itself.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+&lt;verbatim&gt;
+class CatAnimal {
+  void purr() {
+    &lt;code here&gt;
+  }
+}
+&lt;/verbatim&gt;
+</pre>
+</font></span>
+</td><td valign="top">
+<verbatim>
+class CatAnimal {
+  void purr() {
+    <code here>
+  }
+}
+</verbatim>
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Separator:* %BR%
+ At least three dashes at the beginning of a line.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+-------
+</pre>
+</font></span>
+</td><td valign="top">
+-------
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *List Item:* %BR%
+ Three spaces, an asterisk, and another space.
+ %BR% __Note:__ If you don't want to cram long text onto one line, wrap it and align continuation lines with leading spaces.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+   * bullet item
+   * another
+     bullet
+     item
+   * last bullet item
+</pre>
+</font></span>
+</td><td valign="top">
+   * bullet item
+   * another
+     bullet
+     item
+   * last bullet item
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Nested List Item:* %BR%
+ Six, nine, ... spaces, an asterisk, and another space.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+   * level 1
+      * level 2
+</pre>
+</font></span>
+</td><td valign="top">
+   * level 1
+      * level 2
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Ordered List:* %BR%
+ Three spaces, a number, a dot, and another space. Several types are available besides a number:
+| *Type* | *Generated Style* | *Sample Sequence* |
+| 1. | Arabic numerals | 1, 2, 3, 4... |
+| A. | Uppercase letters | A, B, C, D... |
+| a. | Lowercase letters | a, b, c, d... |
+| I. | Uppercase Roman Numerals | I, II, III, IV... |
+| i. | Lowercase Roman Numerals | i, ii, iii, iv... |
+
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+   1. Sushi
+   1. Dim Sum
+
+   A. Sushi
+   A. Dim Sum
+
+   i. Sushi
+   i. Dim Sum
+</pre>
+</font></span>
+</td><td valign="top">
+   1. Sushi
+   1. Dim Sum
+
+   A. Sushi
+   A. Dim Sum
+
+   i. Sushi
+   i. Dim Sum
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Definition List:* %BR%
+ Three spaces, a dollar sign, the term, a colon, a space, followed by the definition.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+   $ Sushi: Japan
+   $ Dim Sum: S.F.
+</pre>
+</font></span>
+</td><td valign="top">
+   $ Sushi: Japan
+   $ Dim Sum: S.F.
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Table:* %BR%
+ Any number of lines of text. Each line is one row of the table consisting of one or more cells. Each cell starts and ends with a vertical bar '|'. Any spaces at the beginning of a line are ignored.%BR%
+ __Notes:__ %BB%
+ =| <nop>*bold*<nop> |= cells are displayed as table headers.%BB%
+ =|   center-spaced   |= cells are displayed center aligned.%BB%
+ =|     right-spaced |= cells are displayed right aligned.%BB%
+ =| 2 colspan ||= cells are displayed as multi-span columns (i.e., a cell with no text spans a column).%BB%
+ =|^|= cells with a caret indicate follow-up rows of multi-span rows (this functionality is provided by TablePlugin).%BB%
+ If a row contains a large amount of text, and you want it to be more readable while editing the table, split the row into multiple text lines by ending each line with a backslash character ='\'=.%BB%
+ Table cells wrap automatically as determined by the browser.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+| *L* | *C* | *R* |
+| A2 |  2  |  2 |
+| A3 |  3  |  3 |
+| multi span |||
+| A4-6 | four | four |
+|^| five | five |
+|^| six | six |
+</pre>
+</font></span>
+</td><td valign="top">
+| *L* | *C* | *R* |
+| A2 |  2  |  2 |
+| A3 |  3  |  3 |
+| multi span |||
+| A4-6 | four | four |
+|^| five | five |
+|^| six | six |
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *<nop>WikiWord Links:* %BR%
+ <nop>CapitalizedWordsStuckTogether (or WikiWords) will produce a link automatically if preceded by whitespace or parenthesis. %BR% __Note:__ In case you want to link to a topic in a different %WIKITOOLNAME% web write =Otherweb.TopicName=. (The link label is the the name of the web in case the is <nop>%HOMETOPIC%, else it is the topic name)
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+WebNotify
+
+%MAINWEB%.TWikiUsers
+</pre>
+</font></span>
+</td><td valign="top">
+WebNotify
+
+%MAINWEB%.TWikiUsers
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+#SquareBrackets
+ *Forced Links:* %BR%
+ You can create a forced internal link by enclosing words in double square brackets.
+ %BR% __Note:__ Text within the brackets may contain optional spaces; the topic name is formed by capitalizing the initial letter and by removing the spaces; for example, =[<nop>[text formatting FAQ]]= links to topic TextFormattingFAQ.  You can also refer to a different web and use anchors.
+ %BR% __Note:__ To "escape" double square brackets that would otherwise be a correct link, prefix the leading left square brackets with an exclamation point, that is, begin with =![<nop>[....=
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+[[wiki syntax]]
+
+[[%MAINWEB%.TWiki users]]
+
+escaped:
+![[wiki syntax]]
+</pre>
+</font></span>
+</td><td valign="top">
+[[wiki syntax]]
+
+[[%MAINWEB%.TWiki users]]
+
+escaped:
+![[wiki syntax]]
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Specific Links:* %BR%
+ Create a link where you can specify the link text and the link reference separately, using nested square brackets like =[<nop>[reference][text]]=. Internal link references (e.g. WikiSyntax) and external link references (e.g. http://TWiki.org/) are supported.
+ %BR% __Note:__ The same __Forced Links__ rules apply for internal link references.
+ %BR% __Note:__ For external link references, you can simply use a space instead of =][= to separate the link URL from the descriptive text.
+ %BR% __Note:__ Anchor names can be added as well, like =[<nop>[%HOMETOPIC%#MyAnchor][go home]]= and =[<nop>[http://gnu.org/#Action][GNU Action]]=.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+[[WikiSyntax][syntax]]
+
+[[http://gnu.org][GNU]]
+
+[[http://xml.org XML]]
+</pre>
+</font></span>
+</td><td valign="top">
+[[WikiSyntax][syntax]]
+
+[[http://gnu.org][GNU]]
+
+[[http://xml.org XML]]
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Anchors:* %BR%
+ You can define a link reference inside a %WIKITOOLNAME% topic (called an anchor name) and link to that. To __define__ an anchor write =#AnchorName= at the beginning of a line. The anchor name must be a WikiWord. To __link to__ an anchor name use the =[<nop>[MyTopic#MyAnchor]]= syntax. You can omit the topic name if you want to link within the same topic.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+[[WikiWord#NotThere]]
+
+[[#MyAnchor][Jump]]
+
+#MyAnchor To here
+</pre>
+</font></span>
+</td><td valign="top">
+[[WikiWord#NotThere]]
+
+[[#MyAnchor][Jump]]
+
+#MyAnchor To here
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Prevent a Link:* %BR%
+ Prevent a WikiWord from being linked by prepending it with an exclamation point.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+!SunOS
+</pre>
+</font></span>
+</td><td valign="top">
+!SunOS
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+ *Disable Links:* %BR%
+ You can disable automatic linking of WikiWords by surrounding text with =&lt;noautolink&gt;= and =&lt;/noautolink&gt;= tags.
+ %BR% __Note:__ Each tag must be on a line by itself. 
+ %BR% __Note:__ This also works for TWiki tables, but only if you add a blank line between the end of the table and the closing =&lt;/noautolink&gt;= tag (known issue of the TablePlugin).
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<verbatim>
+ <noautolink>
+ RedHat &
+ SuSE
+ </noautolink>
+</verbatim>
+</font></span>
+</td><td valign="top">
+ <noautolink>
+ RedHat &
+ SuSE
+ </noautolink>
+</td>
+</tr>
+<tr bgcolor="#ffffff">
+<td valign="top">
+*Mailto: Links:* %BR%
+To create 'mailto:' links that have more descriptive link text, specify subject lines or message bodies, or omit the email address, you can write =[<nop>[mailto:user@domain descriptive text]]=.
+</td><td valign="top">
+<span style='background : #FFFFCC;'><font color="#990000">
+<pre>
+[[mailto:a@z.com Mail]]
+
+[[mailto:?subject=Hi Hi]]
+</pre>
+</font></span>
+</td><td valign="top">
+[[mailto:a@z.com Mail]]
+
+[[mailto:?subject=Hi Hi]]
+</td>
+</tr>
+</table>
+
+TWiki.TWikiLinkTypes describes some of the surprising forms of links not mentioned above.
+
+
+---++ Using HTML
+
+You can use just about any HTML tag without a problem - however, there are a few usability and technical considerations to keep in mind. If needed, use HTML if there is no TWiki equivalent, for example, write <span style='background : #FFFFCC;'><font color="#990000"> =&lt;strike&gt;deleted text&lt;/strike&gt;= </font></span> to get <strike>deleted text</strike>.
+
+---+++ HTML and TWiki Usability
+
+   * %T% *TIP:* On collaboration pages, it's preferable NOT to use HTML, and to use [[#TWikiShorthand][TWiki shorthand]] instead - this keeps the text uncluttered and easy to edit.
+   * %X% *NOTE:* TWiki is designed to work with a wide range of browsers and computer platforms, holding to HTML 4.0 and XHTML 1.0 compatibility in the standard installation - adding raw HTML, particularly browser-specific tags (or any other mark-up that doesn't degrade well) will reduce compatibility.
+   * Recommendations when using HTML:
+      * Use [[http://www.w3.org/TR/xhtml1/][XHTML 1.0 Transitional]] syntax
+      * Remove all empty lines. TWiki inserts =&lt;p /&gt;= paragraph tags on empty lines, which causes problems if done between tags that do not allow paragraph tags, like for example between table tags.
+      * Remove leading spaces. TWiki might interpret some text as lists.
+      * Do not span a tag over more than one line
+      * %T% If you're pasting in preformatted HTML text and notice problems, check the file in a text processor with no text wrap. Also, save without hard line breaks on text wrap, in your HTML editing program. 
+
+---+++ TWiki HTML Rendering
+
+   * TWiki converts shorthand notation to XHTML 1.0 for display. To copy a fully marked-up page, simply view source in your browser and save the contents.
+      * %T% If you need to save HTML frequently, you may want to check out TWiki:Plugins/PublishAddOn - it will "generate a directory containing rendered versions of a set of TWiki pages together with any attached files."
+   * %X% *NOTE:* The opening and closing angle brackets - ==&lt;...&gt;== - of an HTML tag __must be on the same line__, or the tag will be broken.
+      * This feature allows you to enter an unclosed angle bracket - as a greater than or less than symbol - and have it automatically rendered as if you had entered its HTML character, =&amp;lt;=, ex: ==a < b==
+
+---+++ TWiki and <nop>JavaScript
+
+You can use <nop>JavaScript for your TWiki applications. Since TWiki rendering might interfere with <nop>JavaScript code you need to escape it with HTML comments and =&lt;pre&gt;= tags:
+<verbatim>
+<script type="text/javascript">
+<!-- Hide JavaScript and <pre> escape TWiki rendering
+... put your JavaScript code here...
+// Stop hiding and stop </pre> escaping TWiki rendering -->
+</script>
+</verbatim>
+
+---++ Hyperlinks
+
+Being able to create links without any formatting required is a core TWiki feature, made possible with WikiWords. New TWiki linking rules are a simple extension of the syntax that provide a new set of flexible options. 
+
+---+++ Internal Links
+
+   * GoodStyle is a WikiWord that links to the <nop>GoodStyle topic located in the current %WIKITOOLNAME% web.
+
+   * NotExistingYet is a topic waiting to be written. Create the topic by clicking on the *?*. (Try clicking, but then, *Cancel* - creating the topic would wreck this example!)
+
+---+++ External Links
+
+   * =http://...=, =https://...=, =ftp://...=, =gopher://...=, =news://...=, =file://...=, =telnet://...=
+     and =mailto:...@...= are linked automatically.
+
+   * Email addresses like =name@domain.com= are linked automatically.
+
+   * =[<nop>[Square bracket rules]]= let you easily create [[#SquareBrackets][non-WikiWord links]].
+      * You can also write =[<nop>[http://yahoo.com Yahoo home page]]= as an easier way of doing external links with descriptive text for the link, such as [[http://yahoo.com/ Yahoo home page]].
+
+
+---++ TWiki Variables
+
+Variables are names that are enclosed in percent signs =%= that are expanded on the fly.
+
+   * =%<nop>TOC%= : Automatically generates a table of contents based on headings in a topic - see the top of this page for an example.
+
+   * =%<nop>WEB%= : The current web, is <b>%WEB%</b>.
+
+   * =%<nop>TOPIC%= : The current topic name, is <b>%TOPIC%</b>.
+
+   * =%<nop>ATTACHURL%= : The attachment URL of the current topic. Example usage: If you attach a file to a topic you can refer to it as =<b>%<nop>ATTACHURL%/image.gif</b>= to show the URL of the file or the image in your text.
+
+   * =%<nop>INCLUDE{"SomeTopic"}%= : Server side include, includes another topic. The current %WIKITOOLNAME% web is the default web. Example: =<b>%<nop>INCLUDE{"%TWIKIWEB%.SiteMap"}%</b>=
+
+   * =%<nop>SEARCH{"sushi"}%= : Inline search showing the search result embedded in a topic. FormattedSearch gives you control over formatting, used to create web-based applications.
+
+   * TWikiPreferences defines site-wide variables. Among others:
+      * *Line break:* Write =<span style='background : #FFFFCC;'><font color="#990000">%<nop>BR%</font></span>= to start a new line.
+      * *Colored text:* Write: =<span style='background : #FFFFCC;'><font color="#990000"> %<nop>RED% Red %<nop>ENDCOLOR% and %<nop>BLUE% blue %<nop>ENDCOLOR% colors</font></span>= to get: %RED% Red %ENDCOLOR% and %BLUE% blue %ENDCOLOR% colors.
+      * *Documentation Graphics:* Write: =<span style='background : #FFFFCC;'><font color="#990000"> %<nop>H% Help, %<nop>T% Tip, %<nop>X% Alert</font></span>= to get: %H% Help, %T% Tip, %X% Alert. For more info see TWikiDocGraphics.
+
+   * There are many more variables, see *[[TWikiVariables]]*.
+
+   * To "escape" a variable, prefix it with an exclamation point. Write: =<span style='background : #FFFFCC;'><font color="#990000"> !%<nop>SOMEVARIABLE% </font></span>= to get: !%SOMEVARIABLE%.
+
+---++ <nop>TWikiPlugin Formatting Extensions
+
+Plugins provide additional text formatting capabilities and can extend the functionality of %WIKITOOLNAME% into many other areas. For example, the optional [[http://twiki.org/cgi-bin/view/Plugins/SpreadSheetPlugin][SpreadSheetPlugin]] lets you create a spreadsheet with the same basic notation used in TWiki tables.
+
+Available Plugins are located in the [[http://twiki.org/cgi-bin/view/Plugins][Plugins]] web on TWiki.org. Currently enabled plugins on this TWiki installation, as listed by =%<nop>PLUGINDESCRIPTIONS%=:
+
+%PLUGINDESCRIPTIONS%
+
+Check on current Plugin status and settings for this site in TWikiPreferences.
+
+
+---++ Common Editing Errors
+
+TWiki formatting rules are fairly simple to use and quick to type. However, there are some things to watch out for, taken from the TextFormattingFAQ:
+
+   * *Q:* Text enclosed in angle brackets like =&lt;filename&gt;= is not displayed. How can I show it as it is?
+      * *A:* The ='&lt;'= and ='&gt;'= characters have a special meaning in HTML, they define HTML tags. You need to escape them, so write ='&amp;lt;'= instead of ='&lt;'=, and ='&amp;gt;'= instead of ='&gt;'=. <br /> Example: Type ='prog &amp;lt;filename&amp;gt;'= to get ='prog &lt;filename&gt;'=.
+
+   * *Q:* Why is the ='&'= character sometimes not displayed?
+      * *A:* The ='&'= character has a special meaning in HTML, it starts a so called character entity, i.e. ='&amp;copy;'= is the =&copy;= copyright character. You need to escape ='&amp;'= to see it as it is, so write ='&amp;amp;'= instead of ='&amp;'=. <br /> Example: Type ='This &amp;amp; that'= to get ='This &amp; that'=.
+
+-- TWiki:Main.MikeMannix - 02 Dec 2001 <br />
+-- TWiki:Main.PeterThoeny - 01 Aug 2004
+
+%STOPINCLUDE%
+%ENDSECTION{"distributiondoc"}%
+%INCLUDE{DistributionDocComments}%
+
+Updated to cover improved mailto links (Codev.EmailThisPageLink) and Codev.EasierExternalLinking.  This page is now a bit too wide to easily fit into the pop-up TextFormattingRules from the Edit page - we should either set it to be wider in the =edit*.tmpl= templates' launchWindow routine, or perhaps use a smaller font.  We should target 800x600 screens since those are still quite common according to browser stats sites, so IMO the smaller font is the way to go, although perhaps parameterisable sizes for the pop-up windows would also be a good idea (see CVS:templates/edit.iejs.tmpl for an example of parameterising Codev.JavaScript using TWikiVariables.)
+
+Perhaps if we put a common %STYLESHEET% variable in all templates that includes an optional CSS reference, which can then include a suitable font setup?
+
+I have also temporarily removed the %<nop>TOC%, because (1) it was generating a '*' after the TOC, due to a bug, and (2) it takes up a lot of space and doesn't seem that useful since most of the content of the page is in a table.  Without a TOC, the pop-up window shows the top part of the table, which is the most useful part IMO.  However, others may disagree :)
+
+-- Main.RichardDonkin - 05 Apr 2002
+
+_I'd de-TOC TWikiShorthand instead! It's pretty similar to this page, but I was gonna edit it down for the simple user's guide version. And you don't want all that in a popup window. Makes even more sense with Sandbox.NewContents even sharper divisions of doc type/detail, if that goes anywhere!_
+
+-- _Main.MikeMannix - 04 May 2002_   
+
+Just knew from support that there is a tag for preventing a link for sections of text -rather than a single WikiWord- and it is not documented above: You must surround the text with &lt;noautolink> ... &lt;/noautolink> tags. Hope this to be of some help. 
+
+-- Main.AntonioVega - 12 Apr 2002 
+
+_Hi, Antonio: I looked around. &lt;noautolink> is over a year old, and was briefly documented, then undocumented because people didn't like - found confusing and inconsistent - the HTML style of the tag. . &lt;verbatim> snuck in there, and &lt;nop> is HTML-like - I can see how these would confuse. Then again, what good's an undocumented feature (if it's useful)? Thanks for the tip - I won't add it now, but will ask. If you think it should be docced - or the brackets changed - weigh in on the See Codev.DisableWikiWordLinks... page where the discussion still goes on._
+
+<noautolink>
+RedHat and SuSE are GNU-Linux distributors.
+</noautolink>
+
+_Useful, but the tags are too long..._
+
+-- _Main.MikeMannix - 04 May 2002_
+
+Has anyone else noticed that the [[#TWikiShorthand][TWiki Editing Shorthand]] table has these unbalanced HTML end tags at the end of the table?
+
+<verbatim>
+&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</verbatim>
+
+I removed them....they tend to mess up table-based skins.
+
+-- Main.GladeDiviney - 04 May 2002
+
+I tweaked the text so that the table is more narrow. This is needed because the popup window when getting text formatting help is small.
+
+-- Main.PeterThoeny - 01 Feb 2003
+
+According to Codev.TelnetURLSupport, "(http|ftp|gopher|news|file|https|telnet)" are all supported. So I've added them to the External Links section.
+ 
+-- Main.JohnRouillard - 01 Feb 2003
+
+The =noautolink= tags can't be used inline, but must be on a line by themself. I think =noautolink= should always work, inline and otherwise.
+
+I also think it is rather unwiki-like to use html-style code for this, but can't think of a suitable alternative right now.
+
+-- Main.MattWilkie - 06 Feb 2003
+
+I've been unable to find any notes on what the ---# style of heading is for (I saw it in one of the standard TWiki pages) and was expecting to find some notes on here. Is it any different to ---+&nbsp;?
+
+-- Main.GrahamAshton - 25 Jun 2003
+   * Graham, it looks like =---#= is the same as =---+= but we need confirmation from gurus. Be patient ;-) -- Main.PeterMasiar - 10 Jul 2003
+   * Correct, they are currently the same. =---#= is reserved for auto-numbered headings.
+
+-- Main.PeterThoeny - 16 Jul 2003
+
+In the NOTE on HTML formatting and unclosed angle brackets the example displays the wrong angle bracket for the HTML entity:
+
+=&amp;lt;=, ex: ==a > b==
+
+I've changed it display the proper less than entity.
+
+-- Main.BasilJamesWhitehouseIII - 10 Jul 2003
+
+There seems be something wrong in linking to local files. Various typo are rendered corretly in the source page, ex. a href="file://C:/... or a href="file:///C|/..., but clicking the link has no effect. It is in Win 2k Prof. Apache, Cygwin, Perl.
+
+-- Main.AndrzejGoralczyk - 11 Jan 2004
+
+Mozilla file:// links are disabled by the browser. The gory details are at MozillaBug:84128. Scroll down to comment #20 for a workaround (and the http://preferential.mozdev.org/ extension for an easier way to implement it).
+
+If you are not using Mozilla, something else is happening and you should go to [[Support.WebHome][Support]] (ie:  file:// links should work fine).
+
+-- Main.MattWilkie - 13 Jan 2004
+
+Thank You, Matt. Now Mozilla works.
+
+-- Main.AndrzejGoralczyk - 01 Feb 2004
+
+I found myself in the awkward situation that I wanted to use <nop>JavaScript to embed a form with some dynamic properties on a wiki page. While I would be the first one to condemn this practice <nop>:-) it would be nice if there was a way to say "this is magical, don't touch". What I need to happen is for stuff like "if (number &gt; 1000)" to get through to the <nop>JavaScript interpreter correctly, i.e. the larger-than sign should not be converted to an entity. (Of course I had to use &amp;gt; here to make it through.)
+
+-- Main.EraEriksson - 03 Mar 2004
+
+I removed the reference to "You need Plugins.TablePlugin for multi-span rows to work." since this Plugin is preinstalled in the latest Beta.
+
+-- Main.PeterThoeny - 17 Mar 2004
+
+It might be wise to leave in something like "(multi-span rows provided by TablePlugin)" just in case it is uninstalled. It could also help someone visiting this site who is running an earlier version.
+
+-- Main.SamHasler - 22 Mar 2004
+
+Era: I added doc on how to escape <nop>JavaScript.
+
+Sam: Good suggestion, done.
+
+-- Main.PeterThoeny - 30 Mar 2004
+
+Explained _continuation lines_ in lists. Please check my suggested wording.
+
+-- Main.DanielKabs - 23 Aug 2005
+
+Thanks Daniel, it's descriptive.
+
+-- Main.PeterThoeny - 24 Aug 2005
+
+I would like to know if there is any format code that would make any given text look like it has been crossed over (I want to show for everybody to see in a explicit way what was corrected or erased  in the last revision of a page)
+
+-- Main.JaimeCaamanoRuiz - 25 Aug 2005
+
+You can use HTML for that, see updated docs above (under "Using HTML" section)
+
+-- Main.PeterThoeny - 25 Aug 2005
+
+It was right there and I didn't see it. Sorry and thanks!
+
+-- Main.JaimeCaamanoRuiz - 25 Aug 2005
+
+You didn't see it because I just added it :-)
+
+-- Main.PeterThoeny - 25 Aug 2005
+
+Moved question about attaching files to Support.HowDoIAttachFiles. This area is for commenting on  %TOPIC% documentation.
+
+-- Main.LynnwoodBrown - 13 Oct 2005
+
+This topic is important. It should be promoted to TWiki.WebHome
+
+-- Main.ZhengShao - 23 Jan 2006
+
+Just noticed it's already on WebHome :cool:
+
+-- Main.ZhengShao - 23 Jan 2006
+
+I couldn't find an existing topic for the html methods of displaying special characters.  Since I had to create one for my own TWiki installation, I'm sharing the love. :)  Check out SpecialCharacters which has a very long list of multiple methods of displaying special symbols and characters.
+
+-- Main.AmandaSmith - 20 Feb 2006
+
+I want to put a &lt;verbatim> code snippet in a table cell, but the presence of the &lt;verbatim> tag seems to invalidate all table-related formatting in the line where it appears.  Is it possible to do have a formatted snippet in a cell?
+
+-- Main.NickPollitt - 10 Mar 2006
+
+Use either HTML (=&lt;table&gt;=) or try the Plugins.RecursiveRenderPlugin.
+
+-- Main.FranzJosefSilli - 11 Mar 2006
+
+Is there any way to collapse and expand the different !%TOC% levels so that you can view just the main general headings and then drill down into each for greater detail?  (i.e. Click on a heading in the TOC and have it expand to show and sub headings.  Then click on any sub headings to show further sub-sub-headings, etc) 
+
+-- Main.PatSchmidt - 30 Mar 2006
+
+TWiki does not have collabsable TOC entries. That is a good candidate for a Plugin. (Please ask support questions in the Support.WebHome web.)
+
+-- Main.PeterThoeny - 30 Mar 2006
+
+Oops...sorry about that!
+
+-- Main.PatSchmidt - 31 Mar 2006
+
+When making tables--using 
+| *L* | *C* | *R* |
+| A2 |  2  |  2 |
+| A3 |  3  |  3 | 
+makes editing clumsy if I have 10 columns.Is there  any FORM based method for this?So that if someone wants to modufy a record,he can simple edit using a form
+
+-- Main.AvirupDasgupta - 04 Apr 2006
+
+Didn't you have a look at Plugins.EditTablerowPlugin or Plugins.EditInTablePlugin? And PLEASE ask support questions in the [[Support.WebHome][Support]] Web!
+
+-- Main.FranzJosefSilli - 04 Apr 2006
+
+Is there some rason I'm not able to use ! to escape a variable with a parameter inside fixed font tags, e.g., why doesn't this work: =!%<nop>INCLUDE{ "heading name" section="content" }%=
+
+-- Main.CarlMcKinney - 22 Aug 2006
+
+Please ask support questions in the Support.WebHome web. You can use the ! escape character only if preceeded by whitespace. An alternative escape is =&lt;nop>=, e.g. =%&lt;nop>INCLUDE{ ... }%=
+
+-- Main.PeterThoeny - 23 Aug 2006
+%COMMENT%

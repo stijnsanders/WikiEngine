@@ -1,0 +1,11 @@
+!WikiEngine ToDo
+
+!!Major changes
+
+Add abstract objects for WikiData storage. (WikiStorage)
+Create a default WikiStorage implementation for:
+*plain file storage
+*plain database storage (simple/modifyable database diagram)
+*...
+
+!!Minor changes

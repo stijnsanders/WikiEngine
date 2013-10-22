@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_pascal.xml
+    WikiParse XML to format Pascal code to HTML
+    version 1.0.1.3
+    by Stijn Sanders <stijn@yoy.be>
+    2006-01
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    -->
+    
+    <group>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		Treat tabs as spaces
+		<replace>
+			<pattern>\t</pattern>
+			<with> </with>
+		</replace>
+		
+		Comment, outside of string
+		<split>
+			<pattern>^([^'\n]*?'[^'\n]*?')*?[^'\n]*?(\{[\u0000-\uFFFF]*?\}|\(\*[\u0000-\uFFFF]*?\*\)|//.+$)</pattern>
+			<match>
+				
+				<split>
+					<pattern>(\{[\u0000-\uFFFF]*?\}|\(\*[\u0000-\uFFFF]*?\*\)|//.+$)</pattern>
+					<match>	
+						ignore comment
+						<text></text>
+					</match>
+					<inbetween>
+						<jump>PascalCode</jump>
+					</inbetween>
+				</split>
+				
+			</match>
+			<inbetween>
+				<jump>PascalCode</jump>
+			</inbetween>
+		</split>
+		
+		
+        <htmlencode />
+	
+		All EOL's to plain BR's
+		<replace>
+			<pattern>\n</pattern>
+			<with>&lt;br /&gt;&#xA;</with>
+		</replace>
+		
+		Fix sequented spaces
+		<split>
+			<pattern>(^ | +(:? ))</pattern>
+			<match>
+				<replace>
+					<pattern> </pattern>
+					<with>&amp;nbsp;</with>
+				</replace>
+			</match>
+		</split>
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+
+    </group>
+    
+    <group id="PascalCode">
+		Strings
+		<extract>
+			<pattern>'.*?('|$)</pattern>
+			<match>
+				<text>___</text>
+			</match>
+			<inbetween>
+				Comment on a line
+				<extract>
+					<pattern>//.+$</pattern>
+					<match>
+						ignore
+						<text></text>
+					</match>
+					<inbetween>
+						
+						Denominating header
+						<replace>
+							<multiline>0</multiline>
+							<pattern>^[\s\n]*(unit|library|program)\s+([_0-9a-z]+);</pattern>
+							<with>[[codeview.delphi.$1($2)]]</with>
+						</replace>
+						
+						Skip anything past end
+						<replace>
+							<multiline>0</multiline>
+							<pattern>end\.[.\n]*$</pattern>
+							<with></with>
+						</replace>
+						
+						Uses clause(s)
+						<split>
+							<multiline>0</multiline>
+							<pattern>uses[\s\n][\u0000-\uFFFF]+?;</pattern>
+							<match>
+								<replace>
+									<pattern>^uses</pattern>
+									<with></with>
+								</replace>
+								<replace>
+									<pattern>([_0-9a-z]+)</pattern>
+									<with>
+										[[codeview.delphi.uses(;codeview.delphi.unit($1))]]
+									</with>
+								</replace>
+							</match>
+						</split>
+						
+					</inbetween>
+				</extract>
+			</inbetween>
+		</extract>
+    </group>
+    
+</wikiparse>

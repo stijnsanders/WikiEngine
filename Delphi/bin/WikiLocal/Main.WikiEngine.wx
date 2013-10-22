@@ -1,0 +1,5 @@
+!WikiEngine
+
+WikiEngine is a library that exposes an ActiveX[=/=]COM interface that enables a calling application to parse wiki-data into a display-ready format, using a WikiSyntax defined in a WikiParseXML document.
+
+See also WikiEngine.HomePage

@@ -1,0 +1,596 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_usemod.xml
+    WikiParse XML to mimic http://www.usemod.com/cgi-bin/wiki.pl?TextFormattingRules
+    version 1.0.1.1
+    by Stijn Sanders <stijn@yoy.be>
+    2006-02
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+    -->
+    
+    <jump>Start</jump>
+
+    This label is called to replace parse-codes local URL, adapt to your site
+    <group id="LocalURLs">
+		Link to a page that exists
+		<replace>
+			<pattern>@@w%</pattern>
+			<with>http://www.usemod.com/cgi-bin/wiki.pl?</with>
+		</replace>
+		Link to a page that doesn't exist (edit page link)
+		<replace>
+			<pattern>@@e%</pattern>
+			<with>http://www.usemod.com/cgi-bin/wiki.pl?action=edit&amp;amp;id=</with>
+		</replace>	
+    </group>
+    
+    <group id="InterWikis">
+		<replace>
+			<pattern>UseMod:([^\s]+)</pattern>			
+			<with>&lt;a href="http://www.usemod.com/cgi-bin/wiki.pl?$1"&gt;UseMod:$1&lt;/a&gt;</with>
+		</replace>
+		<replace>
+			<pattern>MeatBall:([^\s]+)</pattern>
+			<with>&lt;a href="http://www.usemod.com/cgi-bin/mb.pl?$1"&gt;MeatBall:$1&lt;/a&gt;</with>
+		</replace>
+    </group>
+    
+    <group id="Start">
+    
+		<check>
+			<ignorecase>0</ignorecase>
+			<pattern>^#REDIRECT </pattern>
+			<do>
+				<replace>
+					<multiline>0</multiline>
+					<pattern>^#(REDIRECT .+)(\n[\u0000-\uFFFF]*)?$</pattern>
+					<with>$1</with>
+				</replace>
+				<command>
+				</command>
+			</do>
+			<else>
+				(move everything else in group "Start" here?)
+			</else>
+		</check>
+    
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		First pre-process text for post-processing styles
+		<replace>
+			<pattern>@@</pattern>
+			<with>@@k%</with>
+		</replace>
+		
+		Take "nowiki" sections
+		<extract>
+			<prefix>%C%</prefix>
+			<pattern>&lt;nowiki&gt;[\u0000-\uFFFF]*?&lt;/nowiki&gt;</pattern>
+			<match>
+				<replace>
+					<multiline>0</multiline>
+					<pattern>^&lt;nowiki&gt;</pattern>
+					<with></with>
+				</replace>
+				<replace>
+					<multiline>0</multiline>
+					<pattern>&lt;/nowiki&gt;$</pattern>
+					<with></with>
+				</replace>
+
+				HTMLEncode, but leave EOL's
+				<split>
+					<pattern>\n</pattern>
+					<inbetween>
+						<htmlencode></htmlencode>
+					</inbetween>
+				</split>
+				
+			</match>
+			<inbetween>
+				Take pre sections
+				<extract>
+					<prefix>%H%</prefix>
+					<pattern>&lt;pre&gt;[\u0000-\uFFFF]*?&lt;/pre&gt;</pattern>
+					<match>
+						Full option htmlencode
+						<htmlencode></htmlencode>
+
+						<replace>
+							<multiline>0</multiline>
+							<pattern>^&amp;lt;pre&amp;gt;</pattern>
+							<with>&lt;pre&gt;</with>
+						</replace>
+						<replace>
+							<multiline>0</multiline>
+							<pattern>&amp;lt;/pre&amp;gt;$</pattern>
+							<with>&lt;/pre&gt;</with>
+						</replace>
+
+					</match>
+					<inbetween>
+						
+						Lines ending with backslash, join with next
+						<replace>
+							<pattern>\\\n</pattern>
+							<with></with>
+						</replace>
+
+						Bold and italics, also fix when used as separator
+						<replace>
+							<pattern>([^']|^)''''('')?([^']|$)</pattern>
+							<with>$1@@hspan%@@h/span%$3</with>
+						</replace>
+						<replace>
+							<pattern>'''([\u0000-\uFFFF]+?)'''</pattern>
+							<with>@@hb%$1@@h/b%</with>
+						</replace>
+						<replace>
+							<pattern>''([\u0000-\uFFFF]+?)''</pattern>
+							<with>@@hi%$1@@h/i%</with>
+						</replace>
+						
+						Allowed pseudo-HTML
+						<jump>DoAllowedHTML</jump>
+						
+						Prefix characters
+						<replace>
+							<pattern>((^ (.+)$\n?)+)</pattern>
+							<with>@@hpre%$1@@h/pre%&#xA;</with>
+						</replace>
+						<jump>DoListOL</jump>
+						<jump>DoListUL</jump>
+						<jump>DoListDL</jump>
+						<jump>DoIndent</jump>
+						<jump>DoTables</jump>
+						
+						Page anchors
+						<replace>
+							<pattern>\[#([^\]"'&lt;&gt;]+?)\]</pattern>
+							<with>@@ha name="$1"%@@h/a%</with>
+						</replace>
+						
+						Replace dashes with HR
+						<replace>
+							<pattern>^----+$</pattern>
+							<with>@@hhr /%</with>
+						</replace>
+						
+						Headers
+						<replace>
+							<pattern>^====== (.+) =====$</pattern>
+							<with>@@hh6%$1@@h/h6%</with>
+						</replace>
+						<replace>
+							<pattern>^===== (.+) ====$</pattern>
+							<with>@@hh5%$1@@h/h5%</with>
+						</replace>
+						<replace>
+							<pattern>^==== (.+) ===$</pattern>
+							<with>@@hh4%$1@@h/h4%</with>
+						</replace>
+						<replace>
+							<pattern>^=== (.+) ===$</pattern>
+							<with>@@hh3%$1@@h/h3%</with>
+						</replace>
+						<replace>
+							<pattern>^== (.+) ==$</pattern>
+							<with>@@hh2%$1@@h/h2%</with>
+						</replace>
+						<replace>
+							<pattern>^= (.+) =$</pattern>
+							<with>@@hh1%$1@@h/h1%</with>
+						</replace>
+						
+						Post-processing to get additional layout correct
+						<split>
+							<pattern>@@h(.+?)%</pattern>
+							<match>
+								<replace>
+									<multiline>0</multiline>
+									<pattern>^@@h</pattern>
+									<with>&lt;</with>
+								</replace>
+								<replace>
+									<multiline>0</multiline>
+									<pattern>%$</pattern>
+									<with>&gt;</with>
+								</replace>
+							</match>
+							<inbetween>
+							
+								HTMLEncode, but leave EOL's
+								<split>
+									<pattern>\n</pattern>
+									<inbetween>
+										<htmlencode></htmlencode>
+									</inbetween>
+								</split>
+
+								Links
+								<split>
+									<pattern>\[\[[\u0000-\uFFFF]*?\]\]</pattern>
+									<match>
+										Free Link
+										<replace>
+											<multiline>0</multiline>
+											<pattern>^\[\[</pattern>
+											<with></with>
+										</replace>
+										<replace>
+											<multiline>0</multiline>
+											<pattern>\]\]$</pattern>
+											<with></with>
+										</replace>
+										<jump>CheckWiki</jump>
+									</match>
+									<inbetween>
+									
+										Named URL's
+										<split>
+											<pattern>\[(www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)([^\]]+?)\]</pattern>
+											<match>
+												
+												<replaceif>
+													<pattern>^\[([^\s]+)\s?([^\]]+?\.(jpg|jpeg|png|gif|bmp))\]$</pattern>
+													<with>&lt;a href="$1"&gt;&lt;img src="$2" /&gt;&lt;/a&gt;</with>
+													<else>
+														<replace>
+															<pattern>^\[([^\s]+)\s?([^\]]+?)\]$</pattern>
+															<with>&lt;a href="$1"&gt;[$2]&lt;/a&gt;</with>
+														</replace>
+													</else>
+												</replaceif>
+
+											</match>
+											<inbetween>
+												
+												Plain URL's
+												<split>
+													<pattern>(www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\+\(\)?&amp;=#:;/A-Z0-9]+</pattern>
+													<match>
+														<replaceif>
+															<pattern>^(.*\.(jpg|jpeg|png|gif|bmp))$</pattern>
+															<with>&lt;img src="$1" /&gt;</with>
+															<else>
+																<replace>
+																	<pattern>^(.*)$</pattern>
+																	<with>&lt;a href="$1"&gt;$1&lt;/a&gt;</with>
+																</replace>
+															</else>
+														</replaceif>
+														
+													</match>
+													<inbetween>
+													
+														<jump>InterWikis</jump>
+														
+														<split>
+															<pattern>&lt;a[\u0000-\uFFFF]+&lt;/a&gt;</pattern>
+															<prefix>%j%</prefix>
+															<inbetween>
+															
+																WikiNames
+																<split>
+																	<ignorecase>0</ignorecase>
+																	<!--<pattern>((([A-Z]+[a-z]+[A-Z]+[A-Za-z_0-9]*)?/[A-Z]+[a-z]+[A-Za-z_0-9]*)|[A-Z]+[a-z]+[A-Z]+[A-Za-z_0-9]*)</pattern>-->
+																	<pattern>((([A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜ]+[A-ZÖÄÜa-züäöß_0-9]*)?/[A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜa-züäöß_0-9]*)|[A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜ]+[A-ZÖÄÜa-züäöß_0-9]*)</pattern>
+																	<match>
+																		<jump>CheckWiki</jump>
+																	</match>
+																	<inbetween>
+																	
+																	</inbetween>
+																</split>
+													
+															</inbetween>
+														</split>
+														
+													</inbetween>
+												</split>
+									
+											</inbetween>
+										</split>
+									
+									</inbetween>
+								</split>
+							
+							</inbetween>
+						</split>
+						
+						<jump>LocalURLs</jump>
+						
+						Double EOL starts new paragraph
+						<replace>
+							<pattern>(\n\n)</pattern>
+							<with>&lt;/p&gt;$1&lt;p&gt;</with>
+						</replace>
+
+					</inbetween>
+				</extract>
+			</inbetween>
+		</extract>
+		
+		Post-processing to get additional layout correct
+		<replace>
+			<pattern>@@k%</pattern>
+			<with>@@</with>
+		</replace>
+		
+		Enclose all in a paragraph, remove empty ones
+		<prepend>&lt;p&gt;&#xA;</prepend>
+		<append>&lt;/p&gt;&#xA;</append>
+		<replace>
+			<pattern>&lt;p&gt;\s*?&lt;/p&gt;\s*</pattern>
+			<with></with>
+		</replace>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>	
+			<with>&#xD;&#xA;</with>
+		</replace>
+		
+    
+    </group>
+
+	DoAllowedHTML, a check with the identical pattern is needed to avoid infinite loops!
+	<check id="DoAllowedHTML">
+		<pattern>&lt;(b|i|u|code|tt)&gt;(.+?)&lt;/\1&gt;</pattern>		
+		<do>
+			<replace>
+				<pattern>&lt;(b|i|u|code|tt)&gt;(.+?)&lt;/\1&gt;</pattern>
+				<with>@@h$1%$2@@h/$1%</with>
+			</replace>
+			Find more
+			<jump>DoAllowedHTML</jump>
+		</do>
+	</check>
+
+    <split id="DoListUL">
+		<pattern>(^\*.+?$\n?)+</pattern>
+		<match>
+			Check nested level
+			<extract>
+				<prefix>%E%</prefix>
+				<pattern>(^\*\*.+?$\n?)+</pattern>
+				<match>
+					Remove prefixes
+					<replace>
+						<pattern>^\*</pattern>
+						<with></with>
+					</replace>
+					Recurse
+					<jump>DoListUL</jump>
+				</match>
+				<inbetween>
+					<replace>
+						<pattern>^\*(.+?)$</pattern>
+						<with>@@hli%$1@@h/li%</with>
+					</replace>
+					<prepend>@@hul%</prepend>
+					<append>@@h/ul%&#xA;</append>
+				</inbetween>
+			</extract>
+		</match>
+	</split>
+    
+    <split id="DoListOL">
+		<pattern>(^#.+?$\n?)+</pattern>
+		<match>
+			Check nested level
+			<extract>
+				<prefix>%F%</prefix>
+				<pattern>(^##.+?$\n?)+</pattern>
+				<match>
+					Remove prefixes
+					<replace>
+						<pattern>^#</pattern>
+						<with></with>
+					</replace>
+					Recurse
+					<jump>DoListOL</jump>
+				</match>
+				<inbetween>
+					<replace>
+						<pattern>^#(.+?)$</pattern>
+						<with>@@hli%$1@@h/li%</with>
+					</replace>
+					<prepend>@@hol%</prepend>
+					<append>@@h/ol%&#xA;</append>
+				</inbetween>
+			</extract>
+		</match>
+	</split>
+    
+    <split id="DoIndent">
+		<pattern>(^:.+?$\n?)+</pattern>
+		<match>
+			Check nested level
+			<extract>
+				<prefix>%G%</prefix>
+				<pattern>(^::.+?$\n?)+</pattern>
+				<match>
+					Remove prefixes
+					<replace>
+						<pattern>^:</pattern>
+						<with></with>
+					</replace>
+					Recurse
+					<jump>DoIndent</jump>
+				</match>
+				<inbetween>
+					Appently usemod.com uses DT/DD (and no DT?)
+					<replace>
+						<pattern>^:(.+?)$</pattern>
+						<with>@@hdd%$1@@h/dd%</with>
+					</replace>
+					<prepend>@@hdl%</prepend>
+					<append>@@h/dl%&#xA;</append>
+				</inbetween>
+			</extract>
+		</match>
+	</split>
+    
+    <split id="DoListDL">
+		<pattern>(^[;:].+?$\n?)+</pattern>
+		<match>
+			Check nested level
+			<extract>
+				<prefix>%I%</prefix>
+                Extraction needs a suffix with EOL to preserve line breaks
+				<suffix>#&#xA;</suffix>
+				<pattern>(^[;:][;:].+?$\n?)+</pattern>
+				<match>
+					Remove prefixes
+					<replace>
+						<pattern>^[;:]</pattern>
+						<with></with>
+					</replace>
+					Recurse
+					<jump>DoListDL</jump>
+				</match>
+				<inbetween>
+					<replace>
+						<pattern>^;(.*?)(:(.*))?$</pattern>
+						<with>@@hdt%$1@@h/dt%@@hdd%$3@@h/dd%</with>
+					</replace>
+					<replace>
+						<pattern>^:(.*?)$</pattern>
+						<with>@@hdd%$1@@h/dd%</with>
+					</replace>
+					<prepend>@@hdl%</prepend>
+					<append>@@h/dl%&#xA;</append>
+				</inbetween>
+			</extract>
+		</match>
+	</split>
+    
+    <split id="DoTables">
+		<pattern>(^\|\|.+?$\n?( *?\n)?)+</pattern>
+		<match>
+
+            Clear any empty lines
+            <replace>
+				<pattern>^ *?\n</pattern>
+				<with></with>
+			</replace>
+                        
+            Start/end
+            <prepend>@@htable class="basetable"%@@htbody%&#xA;</prepend>
+            Rows and cells
+            <split>
+				<pattern>^\|\|.*?$</pattern>
+				<match>
+                    Remove overfluxious prefixes (in stead of nest?)
+                    <replace>
+						<pattern>^(\|\|)+</pattern>
+						<with>||</with>
+					</replace>
+
+                    Create colspan codes
+                    <split>
+                    	<pattern>\|\|(\|\|)+</pattern>
+                        <match>
+                            <replace>
+                                <pattern>\|\|</pattern>
+                                <with>x</with>
+                            </replace>
+                            <length></length>
+                            <prepend>@@s</prepend>
+                            <append>%||</append>
+                        </match>
+                    </split>
+
+                    Remove ending delimiter
+                    <replace>
+						<pattern>\|\| *?$</pattern>
+						<with></with>
+					</replace>
+
+                    Plain cells
+					<replace>
+						<pattern>\|\|</pattern>
+						<with>@@h/td%@@htd%</with>
+					</replace>
+
+                    Row tags, first cell will close an unexisting previous cell
+                    <prepend>@@htr valign="top"%</prepend>
+                    <append>@@h/td%@@h/tr%</append>
+
+                </match>
+			</split>
+
+            Fix first cells
+            <replace>
+				<pattern>@@htr([^%]*?)%@@h/td%</pattern>
+				<with>@@htr$1%</with>
+			</replace>
+
+			Fix empty cells and cell alignment,colspan codes
+			<split>
+				<pattern>@@htd[^%]*?%.+?@@h/td%</pattern>
+				<match>
+                    <replace>
+						<pattern>@@h(td[^%]*?)%(.+?)@@s([0-9]+?)%@@h/td%</pattern>
+                        <with>@@h$1 colspan="$3"%$2@@h/td%</with>
+                    </replace>
+					<replace>
+						<pattern>@@h(td[^%]*?)% *?@@h/td%</pattern>
+						<with>@@h$1%&amp;nbsp;@@h/td%</with>
+					</replace>
+					<replace>
+						<pattern>@@h(td[^%]*?)%(!?) (.+?) @@h/td%</pattern>
+						<with>@@h$1 align="center"%$2$3@@h/td%</with>
+					</replace>
+					<replace>
+						<pattern>@@h(td[^%]*?)%(!?) (.+?)@@h/td%</pattern>
+						<with>@@h$1 align="right"%$2$3@@h/td%</with>
+					</replace>
+					<replace>
+						<pattern>@@h(td[^%]*?)%(.+?) @@h/td%</pattern>
+						<with>@@h$1 align="left"%$2@@h/td%</with>
+					</replace>
+				</match>
+			</split>
+			
+
+            Fix header cells
+            <replace>
+				<pattern>@@htd([^%]*?)%!(.*?)@@h/td%</pattern>
+				<with>@@hth$1%$2@@h/th%</with>
+			</replace>
+            
+            <append>@@h/tbody%@@h/table%&#xA;</append>
+                    
+        </match>
+	</split>
+	
+	<wiki id="CheckWiki">
+		update??
+		<found>
+			<replace>
+				<pattern>^(.*)$</pattern>
+				<with>&lt;a href="@@w%$1" class="wikilink"&gt;$1&lt;/a&gt;</with>
+			</replace>
+		</found>
+		<missing>
+			<replace>
+				<pattern>^(.*)$</pattern>
+				<with>&lt;a href="@@e%$1" class="newwiki"&gt;$1&lt;span&gt;?&lt;/span&gt;&lt;/a&gt;</with>
+			</replace>
+		</missing>
+	</wiki>
+    
+</wikiparse>

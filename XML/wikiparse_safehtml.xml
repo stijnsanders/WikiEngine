@@ -1,0 +1,112 @@
+<wikiparse>
+	<!--
+	
+	wikiparse_safehtml.xml
+	WikiParse XML for HTML
+	version 1.0
+	by Stijn Sanders <stijn@yoy.be>
+	2005-12
+	
+	CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+	
+	Incoming HTML is stripped from unwanted HTML,
+	CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
+	To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
+	 
+	-->
+	
+	<group>
+		CRLF/LF fix
+		<replace><pattern>\r\n</pattern><with>&#xA;</with></replace>
+		
+		Strip possibly hazardous HTML elements
+		<replace>
+			<pattern>&lt;(/?)(script|object|iframe|base|html|body|head|meta|link)</pattern>
+			<with>&lt;$1x$2</with>
+		</replace>
+		
+		Strip possibly hazardous HTML attributes
+		<replace>
+			<pattern>\\bon([a-z2]+)=</pattern>
+			<with>xx$1=</with>
+		</replace>
+		<replace>
+			<pattern>href=([\"']?)((java|j|vb|ecma)script):</pattern>
+			<with>href=$1#$1 xx=$1$2:</with>
+		</replace>
+				
+		Strip any FONT tags put in by pasting from Microsoft applications
+		<replace>
+			<pattern>&lt;/?font[^&gt;]*?&gt;</pattern>
+			<with></with>
+		</replace>
+		
+		Don't take links between certain tags
+		<split>
+			<pattern>&lt;(a|textarea|xmp|nowiki)[\\s&gt;][\u0000-\uFFFF]*?&lt;/\1[^&gt;]*?&gt;</pattern>
+			<match>
+			</match>
+			<inbetween>
+
+				Only take WikiNames between the tags
+				<split>
+					<pattern>&lt;/?[^&gt;]+?&gt;</pattern>
+					
+					<match>
+					</match>
+					<inbetween>
+						<jump>DoLinks</jump>
+					</inbetween>
+				</split>
+
+			</inbetween>
+		</split>
+		
+		CRLF/LF fix
+		<replace><pattern>\n</pattern><with>&#xD;&#xA;</with></replace>
+	</group>
+	
+	<group id="DoWikiLinks">
+	
+		Get any prefixed items
+		<split>
+			<pattern>([a-z]+):([-a-z0-9_]+)</pattern>
+			<match>
+				<replaceif>(c2:)(.+)<pattern></pattern><with>&lt;a href="http://c2.com/cgi/wiki?$2" class="sisterlink"&gt;&lt;span&gt;$1&lt;/span&gt;$2&lt;/a&gt;</with><else>
+				<replaceif>(mb:)(.+)<pattern></pattern><with>&lt;a href="http://www.usemod.com/cgi-bin/mb.pl?$2" class="sisterlink"&gt;&lt;span&gt;$1&lt;/span&gt;$2&lt;/a&gt;</with><else>
+				
+				Add more here
+				
+				</else></replaceif>
+				</else></replaceif>
+			</match>
+			<inbetween>
+				Extract WikiNames
+				<split>
+					<pattern>[a-z0-9]*?[A-Z]+?[a-z0-9_]*?[A-Z0-9]+?[A-Za-z0-9]*</pattern>
+					<match>
+						<wiki>
+							<found>
+								<replace>
+									<pattern>^(.+)$</pattern>
+									<with>&lt;a href="$1" class="wikilink"&gt;$1&lt;/a&gt;</with>
+								</replace>
+							</found>
+							<missing>
+								<replace>
+									<pattern>^(.+)$</pattern>
+									<with>&lt;a href="$1" class="newwiki"&gt;$1&lt;span&gt;?&lt;/span&gt;&lt;/a&gt;</with>
+								</replace>
+							</missing>
+						</wiki>
+					</match>
+					<inbetween>
+						
+					</inbetween>
+				</split>
+			</inbetween>
+		</split>
+	
+	</group>
+	
+</wikiparse>

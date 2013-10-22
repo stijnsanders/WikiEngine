@@ -1,0 +1,31 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiEngine.Net", "WikiEngine.Net\WikiEngine.Net.csproj", "{37B413CD-555A-49F9-A3B2-88AFCAD63C70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiLocal.Net", "WikiLocal.Net\WikiLocal.Net.csproj", "{FAADF0E0-2D53-4EA1-B754-2BCF7458F797}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiEdit.Net", "WikiEdit.Net\WikiEdit.Net.csproj", "{F22ECA05-4FD9-4283-B2BB-8FDDAF73FD57}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37B413CD-555A-49F9-A3B2-88AFCAD63C70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37B413CD-555A-49F9-A3B2-88AFCAD63C70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37B413CD-555A-49F9-A3B2-88AFCAD63C70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37B413CD-555A-49F9-A3B2-88AFCAD63C70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAADF0E0-2D53-4EA1-B754-2BCF7458F797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAADF0E0-2D53-4EA1-B754-2BCF7458F797}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAADF0E0-2D53-4EA1-B754-2BCF7458F797}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAADF0E0-2D53-4EA1-B754-2BCF7458F797}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22ECA05-4FD9-4283-B2BB-8FDDAF73FD57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22ECA05-4FD9-4283-B2BB-8FDDAF73FD57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22ECA05-4FD9-4283-B2BB-8FDDAF73FD57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22ECA05-4FD9-4283-B2BB-8FDDAF73FD57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

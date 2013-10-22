@@ -1,0 +1,35 @@
+Database stuff:
+- storing wikilinks
+- locking??
+- recent changes, wanted pages... (pagelist)
+
+- nog eens alles bekijken van commando's
+- %color=% codes
+- %red% %% span codes
+
+wiki stuff
+- redirect: check WikiName?
+- checkwiki en groups: als niet eerst gevonden check op $1.$1 (of $1.HomePage?)
+- includes of form (:include RequestID13141#Request_Title#Request_Title_End:)
+
+regex stuff
+- global default for ignorecase/multiline/global
+- debug: dump stack trace into XML?
+
+ASP client
+
+ASP.net client
+
+DHTML clientside client
+
+documentation
+
+
+
+WikiLocal
+- settings: keuze files, database?
+- history?
+- user-info? recent changes?
+- search!
+- (files?)
+- templates (search file "*New")

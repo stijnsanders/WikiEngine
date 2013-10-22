@@ -1,0 +1,454 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_markdown.xml
+    WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
+    version 1.0.0.40
+    by Stijn Sanders <stijn@yoy.be>
+    2012-12
+
+    When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+    CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
+    To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
+
+    -->
+	
+	<jump>Start</jump>
+    
+    This label is called to replace parse-codes local URL, adapt to your site
+    <group id="LocalURLs">
+		Link to a page that exists
+		<replace>
+			<pattern>@@w%</pattern>
+			<with>mdw.php?n=</with>
+		</replace>
+		Link to a page that doesn't exist (edit page link)
+		<replace>
+			<pattern>@@e%</pattern>
+			<with>mdw.php?action=edit?n=</with>
+		</replace>
+    </group>
+    
+    Extract WikiLinks, feel free to change or add other alternatives in the main "(|)"
+	The "([A-Z][A-Za-z0-9_]+?\.)?" prefix handles groups
+	<extract id="FindWikiLinks">
+	
+		<pattern>([A-Z][A-Za-z0-9_]+?\.)?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)</pattern>
+		
+		<prefix>%A%</prefix>
+		<ignorecase>0</ignorecase>
+		<match>
+			<wiki>
+				<found>
+					<htmlencode />
+					<replace>
+						<pattern>^(.+)$</pattern>
+						<with>&lt;a href="$1" class="wikilink"&gt;$1&lt;/a&gt;</with>
+					</replace>
+				</found>
+				<missing>
+					<htmlencode />
+					<replace>
+						<pattern>^(.+)$</pattern>
+						<with>&lt;a href="$1" class="wikiedit"&gt;$1&lt;span&gt;?&lt;/span&gt;&lt;/a&gt;</with>
+					</replace>
+				</missing>
+			</wiki>
+		</match>
+	</extract>
+
+    <group id="Start">
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		<jump>MarkDown</jump>
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+    </group>
+    
+	<group id="MarkDown">
+		//TODO: global escapes for \\[-\\`\*_\{\}\[\]\(\)#\+\.!]
+		Headers: underlined
+		<replace>
+			<pattern>^(.+)\n=+?(\n|$)</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h1&gt;$1&lt;/h1&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(.+)\n-+?(\n|$)</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h2&gt;$1&lt;/h2&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		Headers: hashes prefix
+		<replace>
+			<pattern>^(######) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h6&gt;$2&lt;/h6&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(#####) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h5&gt;$2&lt;/h5&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(####) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h4&gt;$2&lt;/h4&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(###) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h3&gt;$2&lt;/h3&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(##) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h2&gt;$2&lt;/h2&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		<replace>
+			<pattern>^(#) +(.+?)( \1)?$</pattern>
+			<with>&lt;/p&gt;&#xA;&lt;h1&gt;$2&lt;/h1&gt;&#xA;&lt;p&gt;</with>
+		</replace>
+		
+		Blockquotes: a paragraph prefixed GT
+		<split>
+			<pattern>^&amp;gt; +([\u0000-\uFFFF]*)\n\n</pattern>
+			<match>
+				<check>
+					Are all lines prefixed? Then parse below
+					<pattern>(^&amp;gt; +.*(\n|$))+</pattern>
+					<else>
+						<replace>
+							<pattern>^&amp;gt; </pattern>
+							<multiline>0</multiline>
+							<with>&lt;/p&gt;&#xA;&lt;blockquote&gt;</with>
+						</replace>
+						<replace>
+							<pattern>\n</pattern>
+							<with>&lt;br /&gt;</with>
+						</replace>
+						<append>&lt;/blockquote&gt;&#xA;&lt;p&gt;</append>
+					</else>
+				</check>
+			</match>
+		</split>
+		
+		Blockquotes: a series of lines prefixed GT
+		<split>
+			<pattern>(^&amp;gt; +.*(\n|$))+</pattern>
+			<match>
+				<replace>
+					<pattern>^&amp;gt; +</pattern>
+					<with></with>
+				</replace>
+				
+				Recursive!
+				<jump>MarkDown</jump>
+				
+				<prepend>&lt;/p&gt;&#xA;&lt;blockquote&gt;</prepend>
+				<append>&lt;/blockquote&gt;&#xA;&lt;p&gt;</append>
+			</match>
+		</split>
+		
+		Emphasis
+		<extract>
+			<pattern>(( |^)[\*_]( |$)|\\[\*_])</pattern>
+			<prefix>%B%</prefix>
+			<match>
+				<replace>
+					<pattern>^\\</pattern>
+					<with></with>
+				</replace>
+			</match>
+			<inbetween>
+				<replace>
+					<pattern>(\*\*|__)(.*?)\1</pattern>
+					<with>&lt;strong&gt;$2&lt;/strong&gt;</with>
+				</replace>
+				<replace>
+					<pattern>([\*_])(.*?)\1</pattern>
+					<with>&lt;em&gt;$2&lt;/em&gt;</with>
+				</replace>
+			</inbetween>
+		</extract>
+		
+		Code inline
+		<split>
+			<pattern>`` ?(.+) ?``</pattern>
+			<match>
+				<submatch><number>1</number></submatch>
+				<htmlencode />
+				<prepend>&lt;code&gt;</prepend>
+				<append>&lt;/code&gt;</append>
+			</match>
+		</split>
+		<split>
+			<pattern>`([^`]+?)`</pattern>
+			<match>
+				<submatch><number>1</number></submatch>
+				<htmlencode />
+				<prepend>&lt;code&gt;</prepend>
+				<append>&lt;/code&gt;</append>
+			</match>
+		</split>
+		
+		Quick links
+		<split>
+			<pattern>&lt;(https?:[^&gt;]+?)&gt;</pattern>
+			<match>
+				<submatch><number>1</number></submatch>
+				<htmlencode />
+				<replace>
+					<pattern>^(.+)$</pattern>
+					<with>&lt;a href="$1"&gt;$1&lt;/a&gt;</with>
+				</replace>
+			</match>
+		</split>
+		<split>
+			<pattern>&lt;([^@]+?@.+?\.[a-z]{2,})&gt;</pattern>
+			<match>
+				<submatch><number>1</number></submatch>
+				<htmlencode />
+				'randomization': render into HTML coded entities
+				<replace><ignorecase>0</ignorecase><pattern>x</pattern><with>&amp;#x78;</with></replace> (x first: used in below codes)
+				<replace><ignorecase>0</ignorecase><pattern>a</pattern><with>&amp;#x61;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>c</pattern><with>&amp;#99;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>e</pattern><with>&amp;#x65;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>g</pattern><with>&amp;#103;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>i</pattern><with>&amp;#x69;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>k</pattern><with>&amp;#107;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>m</pattern><with>&amp;#x6D;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>o</pattern><with>&amp;#111;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>q</pattern><with>&amp;#x71;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>r</pattern><with>&amp;#114;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>t</pattern><with>&amp;#x74;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>v</pattern><with>&amp;#118;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>z</pattern><with>&amp;#122;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>@</pattern><with>&amp;#x40;</with></replace>
+				<replace><ignorecase>0</ignorecase><pattern>\.</pattern><with>&amp;#x2E;</with></replace>
+				<replace>
+					<pattern>^(.+)$</pattern>
+					<with>&lt;a href="mailto:$1"&gt;$1&lt;/a&gt;</with>
+				</replace>
+				<debug />
+			</match>
+		</split>
+		
+		<jump>DoLists</jump>
+		<jump>DoCodeBlocks</jump> //TODO: make raw HTML elements not work in code blocks
+		
+		Horizontal rule
+		<replace>
+			<pattern>^\s*([-_\*\+&#xB0;])(\s?\1){2,}\s*$</pattern>
+			<with>&lt;hr /&gt;</with>
+		</replace>
+		
+		Double EOL's end paragraph and start new
+		<prepend>&lt;p&gt;</prepend>
+		<append>&lt;/p&gt;&#xA;</append>
+		<!--<extract>
+			<pattern>&lt;/[a-z]+?&gt;\n</pattern>
+			<prefix>%C%</prefix>
+			<match>-->
+				<replace>
+					<pattern>\n( *?\n)+</pattern>
+					<with>&lt;/p&gt;&#xA;&lt;p&gt;&#xA;</with>
+				</replace>
+			<!--</match>
+		</extract>-->
+		
+		Clip superfluous empty paragraphs generated above
+		<replace>
+			<pattern>&lt;p&gt;&lt;/p&gt;&#xA;</pattern>
+			<with></with>
+		</replace>
+		
+		Line break on lines that end in two or more spaces
+		<replace>
+			<pattern>  +\n</pattern>
+			<with>&lt;br /&gt;&#xA;</with>
+		</replace>
+		
+		<jump>DoRawHtml</jump>
+		<jump>DoImages</jump>
+		<jump>DoLinks</jump>
+		<jump>FindWikiLinks</jump>
+		
+	</group>
+
+	<group id="DoLists">
+		<split>
+			<pattern>(^|\n\s*\n)(([-\+\*]|\d+\.)[ \t].*(\n|$)(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?((\s*\n)?((   ?|\t).*\n)+(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?)*)+</pattern>
+			<multiline>0</multiline>
+			<match>
+				<replace>
+					<pattern>^\n</pattern>
+					<multiline>0</multiline>
+					<with></with>
+				</replace>
+				<check>
+					<pattern>^\d</pattern>
+					<multiline>0</multiline>
+					<do>
+						<prepend>&lt;%%ORDEREDLIST%%/&gt;&#xA;</prepend>
+					</do>
+				</check>
+				<split>
+					<pattern>([-\+\*]|\d+\.)[ \t]+.*(\n|$)(((?!([-\+\*]|\d+\.)[ \t]+)\S.+(\n|$))*\s*\n)?((\s*\n)?((   ?|\t).*\n)+(((?!([-\+\*]|\d+\.)[ \t]+)\S.+(\n|$))*\s*\n)?)*</pattern>
+					<match>
+						<replace>
+							<pattern>^([-\+\*]|\d+\.)?[ \t]+</pattern>
+							<with></with>
+						</replace>
+						<replace>
+							<pattern>\n$</pattern>
+							<multiline>0</multiline>
+							<with></with>
+						</replace>
+						<check>
+							<pattern>\n</pattern>
+							<do>
+								<jump>MarkDown</jump>
+							</do>
+							<else>
+								<check>
+									<pattern>^([-\+\*]|\d/\.| ?)[ \t]</pattern>
+									<do>
+										<jump>MarkDown</jump>
+									</do>
+								</check>
+							</else>
+						</check>
+						<prepend>&lt;li&gt;</prepend>
+						<append>&lt;/li&gt;&#xA;</append>
+					</match>
+				</split>
+				<replaceif>
+					<pattern>^&lt;%%ORDEREDLIST%%/&gt;&#xA;</pattern>
+					<multiline>0</multiline>
+					<do>
+						<prepend>&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;</prepend>
+						<append>&lt;/ol&gt;&#xA;&lt;p&gt;</append>
+					</do>
+					<else>
+						<prepend>&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;</prepend>
+						<append>&lt;/ul&gt;&#xA;&lt;p&gt;</append>
+					</else>
+				</replaceif>
+			</match>
+		</split>
+		<replace>
+			<pattern>^(\d+)\\(\.[ \t])</pattern>
+			<with>$1$2</with>
+		</replace>
+	</group>
+	
+	<split id="DoCodeBlocks">
+		<pattern>(^|\n\s*\n)((    |\t).*\n)+</pattern>
+		<match>
+			<replace>
+				<pattern>^\n\s*\n</pattern>
+				<multiline>0</multiline>
+				<with></with>
+			</replace>
+			<replace>
+				<pattern>^(    |\t)</pattern>
+				<with></with>
+			</replace>
+			<htmlencode />
+			<prepend>&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;</prepend>
+			<append>&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;</append>
+		</match>
+	</split>
+	
+	<split id="DoRawHtml">
+		<pattern>&lt;([a-z]+?)( [^&gt;]*?)?(&gt;([\u0000-\uFFFF]*?)&lt;/\1&gt;|/&gt;)\n?</pattern>
+		<inbetween>
+			Ignore empty space between/before/after HTML sections
+			<check>
+				<pattern>^[\u0000-\u0020]*$</pattern>
+				<multiline>0</multiline>
+				<else>
+				
+					HTML encode, but ignore ampersands in a valid HTML entity
+					<extract>
+						<pattern>&amp;(#[0-9]+?|#x[0-9a-f]+?|[a-z]+?);</pattern>
+						<prefix>%D%</prefix>
+						<inbetween>
+							<htmlencode />
+						</inbetween>
+					</extract>
+					
+				</else>
+			</check>
+		</inbetween>
+	</split>
+	
+	<group id="DoImages">
+		<replace>
+			<pattern>!\[([^\]\n]+?)\]\(([^\)\n]+?)\s?&amp;quot;(.+?)&amp;quot;\)</pattern>
+			<with>&lt;img src="$2" alt="$1" title="$3" /&gt;</with>
+		</replace>
+		<replace>
+			<pattern>!\[([^\]\n]+?)\]\(([^\)\n]+?)\)</pattern>
+			<with>&lt;img src="$2" alt="$1" /&gt;</with>
+		</replace>
+		<process>
+			<pattern>!\[[^\]\n]+?\] ?\[[^\]\n]*?\]</pattern>
+			<do>
+				<replaceif>
+					<pattern>!\[([^\]\n]+?)\] ?\[([^\]\n]+?)\]([\u0000-\uFFFF]*)\n *?\[\2\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+))( +| *\n *)(&amp;quot;(.*)&amp;quot;|'(.*)'|\((.*)\))(\n|$)</pattern>
+					<with>&lt;img src="$5$6" alt="$1" title="$9$10$11" /&gt;$3$12</with>
+					<else>
+						<replace>
+							<pattern>!\[([^\]\n]+?)\] ?\[([^\]\n]+?)\]([\u0000-\uFFFF]*)\n *?\[\2\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+))(\n|$)</pattern>
+							<with>&lt;img src="$5$6" alt="$1" /&gt;$3$7</with>
+						</replace>
+					</else>
+				</replaceif>
+			</do>
+		</process>
+	</group>
+	
+	<group id="DoLinks">
+		<replace>
+			<pattern>\[([^\]\n]+?)\]\(([^\)\n]+?)\s?&amp;quot;(.+?)&amp;quot;\)</pattern>
+			<with>&lt;a href="$2" title="$3"&gt;$1&lt;/a&gt;</with>
+		</replace>
+		<replace>
+			<pattern>\[([^\]\n]+?)\]\(([^\)\n]+?)\)</pattern>
+			<with>&lt;a href="$2"&gt;$1&lt;/a&gt;</with>
+		</replace>
+		<process>
+			<pattern>\[[^\]\n]+?\] ?\[[^\]\n]*?\]</pattern>
+			<do>
+				<replaceif>
+					<pattern>\[([^\]\n]+?)\] ?\[\]([\u0000-\uFFFF]*)\n *?\[\1\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+))( +| *\n *)(&amp;quot;(.*)&amp;quot;|'(.*)'|\((.*)\))(\n|$)</pattern>
+					<with>&lt;a href="$4$5" title="$8$9$10"&gt;$1&lt;/a&gt;$2$11</with>
+					<else>
+						<replaceif>
+							<pattern>\[([^\]\n]+?)\] ?\[\]([\u0000-\uFFFF]*)\n *?\[\1\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+)) *(\n|$)</pattern>
+							<with>&lt;a href="$4$5"&gt;$1&lt;/a&gt;$2$6</with>
+							<else>
+								<replaceif>
+									<pattern>\[([^\]\n]+?)\] ?\[([^\]\n]+?)\]([\u0000-\uFFFF]*)\n *?\[\2\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+))( +| *\n *)(&amp;quot;(.*)&amp;quot;|'(.*)'|\((.*)\))(\n|$)</pattern>
+									<with>&lt;a href="$5$6" title="$9$10$11"&gt;$1&lt;/a&gt;$3$12</with>
+									<else>
+										<replace>
+											<pattern>\[([^\]\n]+?)\] ?\[([^\]\n]+?)\]([\u0000-\uFFFF]*)\n *?\[\2\]: *(&amp;lt;(.+)&amp;gt;|([^ \n]+)) *(\n|$)</pattern>
+											<with>&lt;a href="$5$6"&gt;$1&lt;/a&gt;$3$7</with>
+										</replace>
+									</else>
+								</replaceif>
+							</else>
+						</replaceif>
+					</else>
+				</replaceif>
+			</do>
+		</process>
+	</group>
+	
+</wikiparse>

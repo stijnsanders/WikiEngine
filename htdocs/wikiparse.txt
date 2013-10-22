@@ -1,0 +1,198 @@
+    wikiparse.txt
+    WikiParse XML definition
+    version 1.1.8
+    by Stijn Sanders <stijn@yoy.be>
+    2006-02
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+see also http://yoy.be/dev/xsd/wikiparse.xsd
+
+root document element:
+<wikiparse>
+
+possible elements:
+(elements directly in document element can have an id attribute for jumps)
+(extra comment and text elements are ignored)
+
+<replace>
+		perform a RegEx replace on the current text
+	<pattern>string</pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional),
+		defaults global:1, ignorecase:1, multiline:1
+	<with>
+		text to replace with
+		
+<replaceif>
+        replace text using a RegEx, only if the text matches the RegEx
+		[Attention] if only one section matches, the entire contents are processed, 
+		to direct processing to only the matching portion, use split or extract
+	<pattern>string</pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional),
+		defaults global:1, ignorecase:1, multiline:1
+	<with>
+		text to replace with
+    <do>
+        operation to perform if the text matches, after the replace
+    <else>
+        operation to perform if the text doesn't match
+
+<split>
+		find matches with a RegEx, perform an operation on macthing text
+		and text inbetween, and reassemble the entire text
+		[Attention] the text before and after a match is also an inbetween, 
+		e.g. if the text starts with a match, the first inbetween is performed on the empty
+		text before the first match
+	<pattern>string</pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional),
+		defaults global:1, ignorecase:1, multiline:1
+	<match></match> (optional)
+		operation to perform on matching text
+	<inbetween></inbetween> (optional)
+		operation to perform on text inbetween matches
+	<required>0|1</required>
+		only operate when matches were found (optional, default=0)
+		if required=0, the operations defined by <inbetween> are executed once when no matches are found
+
+<extract>
+        uses a RegEx to extract sections from the text, performs an operation on the remaining text (in its 
+        entirety), and re-inserts the extracted sections, optionally performing an operation on these sections 
+        (one by one)
+	<pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional)
+		defaults: global:1, ignorecase:1, multiline:1
+	<match></match>
+		operation to perform on matching text (optional)
+	<inbetween></inbetween>
+		operation to perform on text inbetween matches (optional)
+	<required>0|1</required>
+		only operate when matches were found (optional, default=0)
+		if required=0, the operations defined by <inbetween> are executed once when no matches are found
+    <prefix> <suffix>
+		Marker codes used for extraction. (optional)
+		defaults prefix:"%%" suffix:"#"
+        When extracting, matches are replaced by the match number enclosed in these markers.
+        Before operating any prefix markers that are present are 'secured' by marker code 0, and are re-set 
+        when processing the extract. If the default marker values have an impact on the text, change them to 
+        something approriate. It's advised to take different characters as prefix and suffix, since identical 
+        characters might form unintended markers when processing the extraction. 
+        [Attention] don't use digits [0-9], and make sure the string works both literally and as a RegEx
+        (don't use RegEx command characters)
+
+<submatch>
+        take the text of a submatch from a parent RegEx operation
+    <number>
+		submatch number to use as current text (starts from 1), if none is specified, all submatches of the 
+		parent match are concatenated
+    <repeat>
+        repeat the submatch text as much times as the length of the <repeat> submatch text (optional)
+
+<check>
+        check the current text and conditionally perform an operation
+        if no value or pattern are provided, the string is checked to be not empty
+	<value>
+		check if text is equal with value (can't be used together with <pattern>)
+	<pattern>
+		check if text matches this RegEx (can't be used together with <value>)
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional),  (only used together with <pattern>)
+		defaults: global:1, ignorecase:1, multiline:1
+	<do>
+		operation to perform if the current text checks out (optional)
+	<else>
+		operation to perform if the current text doesn't check out (optional)
+
+<process>
+		performs a RegEx on the current text, and performs an operation on the current text for each match.
+		In a way process is similar to <check>, but enables the use of <submatch>
+	<pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional)
+		defaults: global:1, ignorecase:1, multiline:1
+	<do></do>
+		operation to perform
+
+<wiki>
+		check if a WikiPage exists,
+        optionally perform a RegEx replace on the current text to extract the WikiName
+	<pattern>string</pattern>
+		RegEx pattern
+	<global>0|1</global> <ignorecase>0|1</ignorecase> <multiline>0|1</multiline>
+		RegEx flags (optional),
+		defaults global:1, ignorecase:1, multiline:1
+	<with>
+		text to replace with
+	<found>
+        operation to perform if the WikiPage exists
+	<missing>
+        operation to perform if the WikiPage doesn't exist
+	<update>0|1</update>
+        if the WikiName is corrected by checking (e.g. case or group prefix), update the text, default:0
+	<updateprefix>
+        if <update> is selected don't replace all the text but prepend the updated WikiName followed by 
+        this prefix
+	<updatesuffix>
+        if <update> is selected don't replace all the text but append this suffix and the updated WikiName
+    <updatedo>
+        operation to perform after update, and before performing <found> or <missing>  
+        can be used to process updated wiki-name
+
+<command>
+		perform a command as defined by the current text, it is parsed as a command name followed by one or 
+		more parameters
+		see the wikiEngine documentation for a list of commands and their parameters
+
+<jump>
+		jumps to a child element of the document element
+		the element text is the target ID, a child element of the document root element 
+		with an id attribute set to this ID is searched to jump to
+		[Attention] be carefull about using jumps to create circular references, 
+		code that calls upon itself can cause a stack overflow
+
+<group>
+		perform a sequence of operations
+
+<include>
+		include and parse another wikiparse xml file
+		element text must be an absolute or relative URL to another wikiparse xml file.
+
+<concat>
+        perform a sequence of operations, each on the same current text, 
+		concatenate the results
+        
+<text>
+        set the current text to a fixed value
+        
+<length>
+        replace the current text by the length of the current length (a decimal digit)
+        
+<prepend>
+<append>
+        prepend or append a certain text to the current text
+
+<htmlencode>
+<urlencode>
+		encode text ready to be displayed as html or used in a URL
+		[Attention] use this to prevent malicious code insertion (e.g. by using the <script> tag or others)
+
+<debug>
+		a WikiParseXML developer's best friend
+        make the parser drop anything and return with what it got so far
+        [Attention] use this for debug purposes only!
+    <skip>
+        skip first x number of passes, and the break
+    <do>
+        perform these operations just before breaking
+        
+<skip>
+        don't do anything (handy to 'comment out' a section that already has XML comment)
+

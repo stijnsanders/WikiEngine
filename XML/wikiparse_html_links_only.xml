@@ -1,0 +1,282 @@
+<wikiparse>
+
+    <!--
+
+    wikiparse_html_links_only.xml
+    WikiParse XML to build HTML around WikiName's starting from valid HTML
+    version 1.0.1.3
+    by Stijn Sanders <stijn@yoy.be>
+    2005-12
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    -->
+	<group>
+
+		<replace>
+			<pattern>@@</pattern>
+			<with>@@k%</with>
+		</replace>
+
+		<replace>
+			<pattern>''''('')?</pattern>
+			<with>&lt;span&gt;&lt;/span&gt;</with>
+		</replace>
+		
+		<replace>
+			<pattern>t([0-9]{4,})</pattern>
+			<with>&lt;a href="http://t2k.spector.com/index.cfm?fuseaction=TrackDetail&amp;amp;TrackID=$1" title="Time2Know ticket $1" class="t2klink"&gt;$1&lt;/a&gt;</with>
+		</replace>
+		
+        Extract items marked for skipping layout
+        <extract>
+			<pattern>\[([=@])([\u0000-\uFFFF]*?)\1\]</pattern>
+			<prefix>%A%</prefix>
+			<match>
+				<submatch>
+					<number>2</number>
+				</submatch>
+			</match>
+			<inbetween>
+
+				Ignore sensitive tags
+				<extract>
+					<pattern>&lt;(a|textarea|xmp|nowiki|style|head)[\s&gt;][\u0000-\uFFFF]+&lt;/\1&gt;</pattern>
+					<prefix>%B%</prefix>
+					<inbetween>
+				
+						<extract>
+							First find anything enclosed in double square brackets:
+							<pattern>\[\[([\u0000-\uFFFF]+?)\]\]</pattern>
+							<prefix>%C%</prefix>
+							<match>
+								<submatch>
+									<number>1</number>
+								</submatch>
+								
+								<jump>ParseLink</jump>
+							            					    
+							</match>
+							<inbetween>
+									
+								Ignore existing tags
+								<extract>
+									<pattern>&lt;[^&gt;]*?&gt;</pattern>
+									<prefix>%D%</prefix>
+									<inbetween>
+
+										<extract>
+											<pattern>`?([A-Za-z0-9_]+?[\./:])?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)</pattern>
+											<prefix>%E%</prefix>
+											<ignorecase>0</ignorecase>
+											<match>
+												Ignore neutralized WikiWords
+												<replaceif>
+													<pattern>^`</pattern>
+													<with></with>
+													<else>
+
+														Fix non-displaying group prefix (slash)
+														<replace>
+															<pattern>^([A-Za-z0-9_]+?)/(.+)$</pattern>
+															<with>$1.$2|$2</with>
+														</replace>
+
+														<jump>ParseLink</jump>
+													</else>
+												</replaceif>
+											</match>
+										</extract>
+										
+									</inbetween>
+								</extract>
+								
+							</inbetween>
+						</extract>
+						
+					</inbetween>
+				</extract>
+				
+			</inbetween>
+		</extract>
+		
+		<replace>
+			<pattern>@@w%</pattern>
+			<with>http://wiki.spector.com/pmwiki.php?n=</with>
+		</replace>
+		<replace>
+			<pattern>@@e%</pattern>
+			<with>http://wiki.spector.com/pmwiki.php?action=edit?n=</with>
+		</replace>
+
+		<replace>
+			<pattern>@@h(.+?)%</pattern>
+			<with>&lt;$1&gt;</with>
+		</replace>
+
+		<replace>
+			<pattern>@@k%</pattern>
+			<with>@@</with>
+		</replace>
+		
+		<replace>
+			<pattern>(&lt;/head&gt;)</pattern>
+			<with>
+&lt;style type="text/css"&gt;
+A.wikilink{color:#008000;}A.wikilink:visited{color:#808000;}
+A.wikiedit {color:#003300;text-decoration: none;}
+A.wikiedit SPAN {color: #666666;font-weight: bold;text-decoration: underline;}
+A.t2klink{background-color:#B5C7C6;border-left:4px solid #006699;padding-left:2px;padding-right:2px;color:#00009C;text-decoration:none;}
+A.t2klink:hover{color: #009999;}
+HR{height:0.1em;color:#808080;}
+&lt;/style&gt;$1
+          </with>
+		</replace>
+		
+	</group>
+
+	Does it start with a slash, or an internet protocol, then it's a HyperLink
+	<group  id="ParseLink">
+
+		Check SisterWiki prefixes
+		<include>sisterwikis.xml</include>
+		
+		Replace arrow notation by pipe notation
+        <replace>
+			<pattern>^([^\|]*?) *?-?&gt; *([\u0000-\uFFFF]*)$</pattern>
+			<with>$2|$1</with>
+		</replace>
+		
+		Check External URL's
+		<check>
+			<pattern>^([/#]|(http|https|file|ftp|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):|[-a-z0-9\.]+?@[-a-z0-9\.]+?\.[a-z]{2,3}\b|[-a-z0-9\.]+?\.[-a-z0-9]+?\.[a-z]{2,3}/?)</pattern>
+			<do>
+				<replaceif>
+					<pattern>^#(([\u0000-\uFFFF]*) *\| *?([\u0000-\uFFFF]*)|([\u0000-\uFFFF]+))$</pattern>
+					<with>&lt;a name="$2$4"&gt;$3@@h/a%</with>
+					<else>
+						<jump>HyperLink</jump>
+					</else>
+				</replaceif>
+			</do>
+			<else>
+				Else it's a WikiLink,
+				
+				Fix any unrecognized prefix
+				<replaceif>
+					<pattern>^([^:]+?:.*)$</pattern>
+					<with>@@hu%$1@@h/u%</with>
+					<else>
+				
+						Check for a () portion inside [[]]
+						<replace>
+							<pattern>^(.*?)\((.*?)\)(.*?)$</pattern>
+							<with>$1$2$3|$1$3</with>
+						</replace>
+						
+						Check if the WikiPage linked to exists or not and link appropriately
+						<wiki>
+							<pattern>( *\|.*)$</pattern>
+							<with></with>
+							<update>1</update>
+							<updateprefix>@@u%</updateprefix>
+							<updatedo>
+								<replaceif>
+									<pattern>^(.*?)@@u%.+?(\|)</pattern>
+									<with>$1$2</with>
+									<else>
+										<replace>
+											<pattern>@@u%</pattern>
+											<with>|</with>
+										</replace>
+									</else>
+								</replaceif>
+							</updatedo>
+							<found>
+								<jump>WikiLinkFound</jump>
+							</found>
+							<missing>
+								<jump>WikiLinkMissing</jump>
+							</missing>
+						</wiki>
+					</else>
+				</replaceif>
+			</else>
+		</check>
+	</group>
+    
+    <group id="HyperLink">
+		Check if it's an e-mail address
+		<check>
+			<pattern>^[-a-z0-9\.]+?@[-a-z0-9\.]+?\.[a-z]{2,3}\b</pattern>
+			<do>
+				<prepend>hyperlink##mailto:####</prepend>
+			</do>
+			<else>
+				Check if it starts with something like www.site.tld
+				<check>
+					<pattern>^[-a-z0-9\.]+?\.[-a-z0-9]+?\.[a-z]{2,3}/?</pattern>
+					<do>
+						<prepend>hyperlink##http://####</prepend>
+					</do>
+					<else>
+						<prepend>hyperlink######</prepend>
+					</else>
+				</check>
+			</else>
+		</check>
+		<jump>SomeLink</jump>
+	</group>
+
+    Use id="SomeLink" with prefix of form "class##prefix##suffix##"
+    <group id="WikiLinkFound">
+		<prepend>wikilink##@@w%####</prepend>
+		<jump>SomeLink</jump>
+	</group>
+
+    <group id="WikiLinkMissing">
+        Suffix with pre-codes because HTMLencode later
+        <prepend>wikiedit##@@e%##@@hspan%?@@h/span%##</prepend>
+        <jump>SomeLink</jump>
+    </group>
+
+    Display some link, prefix text with: class##prefix##suffix##
+    <group id="SomeLink">
+        HTMLEncode up front!
+        <htmlencode></htmlencode>
+
+        Ending tags /a are in code here to pick-up a plain EOL later
+        Check if a caption or title is provided, first with both name and title
+        <replaceif>
+			<pattern>^(.+?)##(.*?)##(.*?)##([^\|]*?) *?\| *?([^\|]*?) *?\| *([\u0000-\uFFFF]*)$</pattern>
+			<with>&lt;a href="$2[[$4]]" title="$6" class="$1"&gt;$5$3@@h/a%</with>
+			<else>
+				With pipe "|"
+				<replaceif>
+					<pattern>^(.+?)##(.*?)##(.*?)##([^\|]*?) *?\| *([\u0000-\uFFFF]*)$</pattern>
+					<with>&lt;a href="$2[[$4]]" title="$4" class="$1"&gt;$5$3@@h/a%</with>
+					<else>
+						Else take target as display name
+						<replace>
+							<pattern>^(.+?)##(.*?)##(.*?)##([\u0000-\uFFFF]*)$</pattern>
+							<with>&lt;a href="$2[[$4]]" title="$4" class="$1"&gt;$4$3@@h/a%</with>
+						</replace>
+					</else>
+				</replaceif>
+            </else>
+		</replaceif>
+		
+		URLEncode sections enclosed in [[]]
+		<split>
+			<pattern>\[\[([\u0000-\uFFFF]+?)\]\]</pattern>
+			<match>
+				<submatch>
+					<number>1</number>
+				</submatch>
+				<urlencode></urlencode>
+			</match>
+		</split>
+		
+    </group>
+
+</wikiparse>

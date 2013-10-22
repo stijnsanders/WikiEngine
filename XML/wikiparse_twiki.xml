@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_twiki.xml
+    WikiParse XML to mimic TWiki
+    version 1.0.0.4
+    by Stijn Sanders <stijn@yoy.be>
+    2006-12
+
+    -->
+    <jump>Start</jump>
+    
+    <group id="WikiFound">
+		TODO
+    </group>
+    
+    <group id="WikiNotFound">
+		TODO
+    </group>
+    
+    <group id="WikiWords">
+		<split>
+			<pattern>([A-Z][A-Za-z0-9_]+?\.)?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)</pattern>
+			<ignorecase>0</ignorecase>
+		</split>
+    </group>
+
+		TODO:
+		- %TOC% (and "---++!!")
+		- lists
+		- definition list
+		- tables		
+		-WikiWords!
+    
+    <group id="Start">
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		<!--
+		Treat tabs as spaces
+		<replace>
+			<pattern>\t</pattern>
+			<with> </with>
+		</replace>
+		-->
+		
+		Verbatim
+		<extract>
+			<pattern>^&lt;verbatim&gt;$([\u0000-\uFFFF]+?)^&lt;/verbatim&gt;$</pattern>
+			<prefix>@A@</prefix>
+			<match>
+				<submatch>
+					<number>1</number>
+				</submatch>
+				<prepend>&lt;xmp&gt;</prepend>
+				<append>&lt;/xmp&gt;</append>
+			</match>
+			<inbetween>
+				
+				Pre
+				<extract>
+					<pattern>^&lt;pre&gt;$([\u0000-\uFFFF]+?)^&lt;/pre&gt;$</pattern>
+					<prefix>@B@</prefix>
+					<match>
+						<submatch>
+							<number>1</number>
+						</submatch>
+						<htmlencode />
+						<prepend>&lt;pre&gt;</prepend>
+						<append>&lt;/pre&gt;</append>
+					</match>
+					<inbetween>
+					
+					
+						Forced Links
+						<extract>
+							<pattern>(\s|^)\[\[(.+?)\]\]</pattern>
+							<prefix>@C@</prefix>
+							<match>
+								Double link text
+								<concat>
+									one to check
+									<group>
+										<submatch><number>2</number></submatch>
+										<split>
+											<pattern>\s([a-z])</pattern>
+											<ignorecase>0</ignorecase>
+											<match>
+												<submatch><number>1</number></submatch>
+												<uppercase />
+											</match>
+										</split>
+									</group>
+									separator
+									<text>][</text>
+									one to display
+									<submatch><number>2</number></submatch>
+								</concat>
+								
+								Now check the first part
+								<wiki>
+									<pattern>^(.+)(#.+)?\]\[$</pattern>
+									<with>$1</with>
+									<found>
+										<jump>WikiFound</jump>
+									</found>
+									<missing>
+										<jump>WikiNotFound</jump>
+									</missing>
+								</wiki>
+								
+							</match>
+							<inbetween>
+							
+								WikiWords
+								<jump>WikiWords</jump>
+					
+								HTMLEncode here? EOL's are fixed to LF only, so htmlencode doesn't do BR's here
+								<htmlencode />
+							
+
+								First pre-process text for post-processing styles
+								<replace>
+									<pattern>@@</pattern>
+									<with>@@k%</with>
+								</replace>
+								Bold Italic
+								<replace>
+									<pattern>__(\S.+?\S)__</pattern>
+									<with>@@hb%@@hi%$1@@h/i%@@h/b%</with>
+								</replace>
+								Italic
+								<replace>
+									<pattern>_(\S.+?\S)_</pattern>
+									<with>@@hi%$1@@h/i%</with>
+								</replace>
+								Bold
+								<replace>
+									<pattern>\*(\S.+?\S)\*</pattern>
+									<with>@@hb%$1@@h/b%</with>
+								</replace>
+								Bold Fixed Font
+								<replace>
+									<pattern>==(\S.+?\S)==</pattern>
+									<with>@@hcode%@@hb%$1@@h/b%@@h/code%</with>
+								</replace>
+								Fixed Font
+								<replace>
+									<pattern>=(\S.+?\S)=</pattern>
+									<with>@@hcode%$1@@h/code%</with>
+								</replace>
+								Separator
+								<replace>
+									<pattern>^---+ *?$</pattern>
+									<with>@@hhr /%</with>
+								</replace>
+
+
+								Headers
+								<extract>
+									<pattern>^-{3,}(\+{1,6})(.+)$</pattern>
+									<match>
+										<concat>
+											<text>@@hh</text>
+											<group>
+												<submatch><number>1</number></submatch>
+												<length />
+											</group>
+											<text>%</text>
+											<submatch><number>2</number></submatch>
+											<text>@@h/h</text>
+											<group>
+												<submatch><number>1</number></submatch>
+												<length />
+											</group>
+											<text>%</text>
+										</concat>
+									</match>
+									<inbetween>
+									</inbetween>
+								</extract>
+								
+								
+								Double EOL's end paragraph and start new
+								<replace>
+									<pattern>\n( *?\n)+</pattern>
+									<with>&#xA;&lt;/p&gt;&#xA;&lt;p&gt;&#xA;</with>
+								</replace>
+								Single EOL's
+								<replace>
+									<pattern>\n</pattern>
+									<with>&lt;br /&gt;&#xA;</with>
+								</replace>
+								Post-processing to get additional layout correct
+								<replace>
+									<pattern>@@h(.+?)%</pattern>
+									<with>&lt;$1&gt;</with>
+								</replace>
+								<replace>
+									<pattern>@@n%</pattern>
+									<with>&#xA;</with>
+								</replace>
+								<replace>
+									<pattern>@@k%</pattern>
+									<with>@@</with>
+								</replace>
+								
+								<prepend>&lt;p&gt;</prepend>
+								<append>&lt;/p&gt;</append>
+						
+							</inbetween>
+						</extract>
+
+					</inbetween>
+				</extract>
+			
+			</inbetween>
+		</extract>
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+		
+    </group>
+
+</wikiparse>

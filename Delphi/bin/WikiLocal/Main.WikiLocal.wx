@@ -1,0 +1,12 @@
+!WikiLocal
+
+WikiLocal is an application that uses WikiEngine to manage WikiData stored in local files.
+
+See also: WikiLocal.HomePage
+
+----
+
+pending more work in WikiEngine to include an abstract section in the API to handle storage, and the first implementations to handle storage:
+*on local files
+*in a database of choice
+*FTP? SVN? ...

@@ -1,0 +1,26 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = WikiEngine.dll WikiEdit.exe WikiLocal.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+WikiEngine.dll: WikiEngine\WikiEngine.dpr
+  $(DCC)
+
+WikiEdit.exe: WikiEdit\WikiEdit.dpr
+  $(DCC)
+
+WikiLocal.exe: WikiLocal\WikiLocal.dpr
+  $(DCC)
+
+

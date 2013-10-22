@@ -1,0 +1,320 @@
+<?xml version="1.0" ?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+	<!--
+
+    wikiparse_wikiwkikweb.xml
+    WikiParse XML to mimic http://c2.com/cgi/wiki?TextFormattingRules
+    version 1.0.1.1
+    by Stijn Sanders <stijn@yoy.be>
+    2006-02
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+    -->
+    
+	<jump>Start</jump>
+	
+    This label is called to replace parse-codes local URL, adapt to your site
+    <group id="LocalURLs">
+		Link to a page that exists
+		<replace>
+			<pattern>@@w%</pattern>
+			<with>http://c2.com/cgi/wiki?</with>
+		</replace>
+		Link to a page that doesn't exist (edit page link)
+		<replace>
+			<pattern>@@e%</pattern>
+			<with>http://c2.com/cgi/wiki?edit=</with>
+		</replace>
+    </group>
+	
+	<group id="Start">
+	
+        CRLF/LF fix
+        <replace>
+				<pattern>\r\n</pattern>
+				<with>&#xA;</with>
+			</replace>
+		<append>&#xA;</append>
+		
+		First pre-process text for post-processing styles
+		<replace>
+			<pattern>@@</pattern>
+			<with>@@k%</with>
+		</replace>
+		
+		Italics and Bold, fix up front when used to delimit closeby text
+		<replace>
+			<pattern>([^']|^)''''('')?([^']|$)</pattern>
+			<with>$1@@hspan%@@h/span%$3</with>
+		</replace>
+		<replace>
+			<pattern>'''([\u0000-\uFFFF]+?)'''</pattern>
+			<with>@@hb%$1@@h/b%</with>
+		</replace>
+		<replace>
+			<pattern>''([\u0000-\uFFFF]+?)''</pattern>
+			<with>@@hi%$1@@h/i%</with>
+		</replace>
+		
+		Prefix characters
+		<split>
+			<pattern>^\t([^:]+?):\t.*$</pattern>
+			<match>
+				<replace>
+					<pattern>^\t([^:]+?):\t(.*)$</pattern>
+					<with>@@hdl%@@hdt%$1@@h/dt%@@hdd%$2@@h/dd%@@h/dl%</with>
+				</replace>
+			</match>
+			<inbetween>
+				<replace>
+					<pattern>((^[ \t](.+)$\n?)+)</pattern>
+					<with>@@hpre%$1@@h/pre%&#xA;</with>
+				</replace>
+			</inbetween>
+		</split>
+		<jump>DoListUL</jump>
+		
+		Replace dashes with HR
+		<replace>
+			<pattern>^----+$</pattern>
+			<with>@@hhr /%</with>
+		</replace>
+		
+		ISBN numbers
+		<split>
+			<pattern>(\[ISBN:? ?[-0-9X]+\]|ISBN: ?[-0-9X]+)</pattern>
+			<match>
+				<replace>
+					<pattern>^(\[ISBN:? ?([-0-9X]+)\]|ISBN: ?([-0-9X]+))$</pattern>
+					<with>$2$3|$2$3</with>
+				</replace>
+				<split>
+					<pattern>^(.+?)\|</pattern>
+					<match>
+						<submatch>
+							<number>1</number>
+						</submatch>
+						<replace>
+							<pattern>-</pattern>
+							<with></with>
+						</replace>
+						<prepend>@@ha href="http://www.amazon.com/exec/obidos/ISBN=</prepend>
+						<append>"%ISBN </append>
+					</match>
+				</split>
+				<append>@@h/a%</append>
+			</match>
+		</split>
+
+
+						Post-processing to get additional layout correct
+						<split>
+							<pattern>@@h(.+?)%</pattern>
+							<match>
+								<replace>
+									<multiline>0</multiline>
+									<pattern>^@@h</pattern>
+									<with>&lt;</with>
+								</replace>
+								<replace>
+									<multiline>0</multiline>
+									<pattern>%$</pattern>
+									<with>&gt;</with>
+								</replace>
+							</match>
+							<inbetween>
+								
+								Plain URL's
+								<split>
+									<pattern>(www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\+\(\)?&amp;=#:;/A-Z0-9]+</pattern>
+									<match>
+										<replaceif>
+											<pattern>^(.*\.(jpg|jpeg|png|gif|bmp))$</pattern>
+											<with>&lt;img src="$1" /&gt;</with>
+											<else>
+												<replace>
+													<pattern>^(.*)$</pattern>
+													<with>&lt;a href="$1"&gt;$1&lt;/a&gt;</with>
+												</replace>
+											</else>
+										</replaceif>
+										
+									</match>
+									<inbetween>
+										WikiNames
+										<extract>
+											WikiWikiWeb's WikiPattern is traditionally strict and straight-forward
+											<pattern>\b[A-Z][a-z]+[A-Z][A-Za-z]+\b</pattern>
+											<prefix>%D%</prefix>
+											<ignorecase>0</ignorecase>
+											<match>
+												<wiki>
+													<found>
+														<replace>
+															<pattern>^(.+)$</pattern>
+															<with>&lt;a href="@@w%$1" class="wikilink"&gt;$1&lt;/a&gt;</with>
+														</replace>
+													</found>
+													<missing>
+														<replace>
+															<pattern>^(.+)$</pattern>
+															<with>&lt;a href="@@e%$1" class="newwiki"&gt;$1&lt;span&gt;?&lt;/span&gt;&lt;/a&gt;</with>
+														</replace>
+													</missing>
+												</wiki>
+											</match>
+											<inbetween>
+											
+												HTMLEncode, but leave EOL's
+												<split>
+													<pattern>\n</pattern>
+													<inbetween>
+														<htmlencode></htmlencode>
+													</inbetween>
+												</split>
+												
+											
+											</inbetween>
+										</extract>
+									</inbetween>
+								</split>
+							</inbetween>
+						</split>
+						
+						<jump>LocalURLs</jump>
+						
+						Double EOL starts new paragraph
+						<replace>
+							<pattern>(\n\n)</pattern>
+							<with>&lt;/p&gt;$1&lt;p&gt;</with>
+						</replace>
+							
+							
+							
+
+		
+		
+		
+		Post-processing to get additional layout correct
+		<replace>
+			<pattern>@@k%</pattern>
+			<with>@@</with>
+		</replace>
+		
+		Enclose all in a paragraph, remove empty ones
+		<prepend>&lt;p&gt;&#xA;</prepend>
+		<append>&lt;/p&gt;&#xA;</append>
+		<replace>
+			<pattern>&lt;p&gt;\s*?&lt;/p&gt;\s*</pattern>
+			<with></with>
+		</replace>
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+		
+		
+	</group>
+	
+    <split id="DoListUL">
+		<pattern>(^\*.+?$\n?)+</pattern>
+		<match>
+			Check nested level
+			<extract>
+				<prefix>%E%</prefix>
+				<pattern>(^\*\*.+?$\n?)+</pattern>
+				<match>
+					Remove prefixes
+					<replace>
+						<pattern>^\*</pattern>
+						<with></with>
+					</replace>
+					Recurse
+					<jump>DoListUL</jump>
+				</match>
+				<inbetween>
+					<replace>
+						<pattern>^\*(.+?)$</pattern>
+						<with>@@hli%$1@@h/li%</with>
+					</replace>
+					<prepend>@@hul%</prepend>
+					<append>@@h/ul%&#xA;</append>
+				</inbetween>
+			</extract>
+		</match>
+	</split>
+    
+	
+	
+	
+	
+    <group id="Start__old">
+    
+		Plain URL's first (might contain WikiName)
+		<extract>
+				<pattern>(www\.|(http|https|file|ftp|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\(\)?&amp;=#:;/A-Z0-9]+</pattern>
+				<match>
+					<replace>
+						<pattern>(.+)</pattern>
+						<with>&lt;a href="$1"&gt;$1&lt;/a&gt;</with>
+					</replace>
+				</match>
+				<inbetween>
+
+						
+						Replace dashes with HR
+						<replace>
+								<pattern>^----+</pattern>
+								<with>&lt;hr /&gt;</with>
+							</replace>
+						
+						Lists
+						<jump>DoLists</jump>
+
+						Double EOL's end paragraph and start new
+						<replace>
+								<pattern>\n( *?\n)+</pattern>
+								<with>&#xA;&lt;/p&gt;&#xA;&lt;p&gt;&#xA;</with>
+							</replace>
+						
+						Post-processing to get additional layout correct
+						<replace>
+								<pattern>@@h(.+?)%</pattern>
+								<with>&lt;$1&gt;</with>
+							</replace>
+						<replace>
+								<pattern>@@n%</pattern>
+								<with>&#xA;</with>
+							</replace>
+						<replace>
+								<pattern>@@k%</pattern>
+								<with>@@</with>
+							</replace>
+
+						Enclose all in a paragraph, remove empty ones
+						<prepend>&lt;p&gt;&#xA;</prepend>
+						<append>&lt;/p&gt;&#xA;</append>
+						<replace>
+								<pattern>&lt;p&gt;\s*?&lt;/p&gt;\s*</pattern>
+								<with></with>
+							</replace>
+						
+						
+				</inbetween>
+			</extract>
+		
+        CRLF/LF fix
+        <replace>
+				<pattern>\n</pattern>
+				<with>&#xD;&#xA;</with>
+			</replace>
+		
+    </group>
+    		
+
+</wikiparse>

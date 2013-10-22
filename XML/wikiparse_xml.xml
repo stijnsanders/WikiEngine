@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_xml.xml
+    WikiParse XML to format Pascal code to HTML
+    version 1.0.1.4
+    by Stijn Sanders <stijn@yoy.be>
+    2006-02
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    -->
+    
+    <group>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		Treat tabs as spaces
+		<replace>
+			<pattern>\t</pattern>
+			<with> </with>
+		</replace>
+		
+		Comment
+		<split>
+			<pattern>&lt;!--[\u0000-\uFFFF]*?--&gt;</pattern>
+			<match>
+			
+			
+				<split>
+					<multiline>0</multiline>
+					<pattern>^&lt;!--</pattern>
+					<match>
+						<text>&lt;span style="color:#999999;"&gt;&amp;lt;!--&lt;/span&gt;&lt;span style="color:#666666;"&gt;</text>
+					</match>
+					<inbetween>
+						<split>
+							<multiline>0</multiline>
+							<pattern>--&gt;</pattern>
+							<match>
+								<text>&lt;/span&gt;&lt;span style="color:#999999;"&gt;--&amp;gt;&lt;/span&gt;&lt;br /&gt;&#xA;</text>
+							</match>
+							<inbetween>
+								<jump>PlainText</jump>
+							</inbetween>
+						</split>
+					</inbetween>
+				</split>
+			
+			</match>
+			<inbetween>
+				
+				System codes
+				<split>
+					<pattern>&lt;\?[^&gt;]+?\?&gt;</pattern>
+					<match>
+						<htmlencode />
+						<prepend>&lt;span style="color:#000099"&gt;</prepend>
+						<append>&lt;/span&gt;&lt;br /&gt;&#xA;</append>
+					</match>
+					<inbetween>
+					
+					
+						CData sections
+						<extract>
+							<pattern>&lt;!\[CDATA\[[\u0000-\uFFFF]*?\]\]&gt;</pattern>
+							<match>
+								<split>
+									<multiline>0</multiline>
+									<pattern>^&lt;!\[CDATA\[</pattern>
+									<match>
+										<text>&lt;span style="color:#009999;"&gt;&amp;lt;![CDATA[&lt;/span&gt;</text>
+									</match>
+									<inbetween>
+										<split>
+											<multiline>0</multiline>
+											<pattern>\]\]&gt;$</pattern>
+											<match>
+												<text>&lt;span style="color:#009999;"&gt;]]&amp;gt;&lt;/span&gt;&lt;br /&gt;&#xA;</text>
+											</match>
+											<inbetween>
+												<jump>PlainText</jump>
+											</inbetween>
+										</split>
+									</inbetween>
+								</split>
+							</match>
+							<inbetween>
+							
+								Empty tags
+								<extract>
+									<multiline>0</multiline>
+									<ignorecase>0</ignorecase>
+									<pattern>&lt;([A-Za-z0-9_:]+)[^&gt;]+/&gt;</pattern>
+									<match>
+										<jump>TagAttrs</jump>
+										<prepend>&lt;span style="color:#993300"&gt;</prepend>
+										<append>&lt;/span&gt;&lt;br /&gt;&#xA;</append>
+									</match>
+									<inbetween>
+										<jump>GetTag</jump>
+									</inbetween>
+								</extract>
+							</inbetween>
+						</extract>
+					</inbetween>
+				</split>
+			</inbetween>
+		</split>
+
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+
+    </group>
+    
+	<split id="GetTag">
+		<multiline>0</multiline>
+		<ignorecase>0</ignorecase>
+		<pattern>&lt;([A-Za-z0-9_:]+)[\u0000-\uFFFF]*?&lt;/\1&gt;</pattern>
+		<match>
+		
+			<split>
+				<multiline>0</multiline>
+				<pattern>^&lt;[^&gt;]+?&gt;</pattern>
+				<match>
+					<jump>TagAttrs</jump>
+					<prepend>&lt;span style="color:#990000"&gt;</prepend>
+					<append>&lt;/span&gt;&lt;div style="margin-left:2em;"&gt;&#xA;</append>
+				</match>
+				<inbetween>
+					<split>
+						<multiline>0</multiline>
+						<pattern>&lt;/[^&gt;]+?&gt;$</pattern>
+						<match>
+							<htmlencode />
+							<replace>
+								<multiline>0</multiline>
+								<ignorecase>0</ignorecase>
+								<pattern>(&amp;lt;/)([A-Za-z0-9_:]+)</pattern>
+								<with>$1&lt;b&gt;$2&lt;/b&gt;</with>
+							</replace>
+							<prepend>&lt;/div&gt;&lt;span style="color:#990000"&gt;</prepend>
+							<append>&lt;/span&gt;&lt;br /&gt;&#xA;</append>
+						</match>
+						<inbetween>
+							
+							<jump>GetTag</jump>
+							
+						</inbetween>
+					</split>
+				</inbetween>
+			</split>
+
+		</match>
+		<inbetween>
+																	<htmlencode />
+		</inbetween>
+	</split>
+	
+	<group id="TagAttrs">
+		<htmlencode />
+		<replace>
+			<multiline>0</multiline>
+			<ignorecase>0</ignorecase>
+			<pattern>([A-Za-z0-9_=]+)=&amp;quot;(.+?)&amp;quot;</pattern>
+			<with>$1&lt;span style="color:#009999"&gt;="&lt;/span&gt;&lt;span style="color:#000000"&gt;$2&lt;/span&gt;&lt;span style="color:#009999"&gt;"&lt;/span&gt;</with>
+		</replace>
+		<replace>
+			<multiline>0</multiline>
+			<ignorecase>0</ignorecase>
+			<pattern>^(&amp;lt;)([A-Za-z0-9_:]+)</pattern>
+			<with>$1&lt;b&gt;$2&lt;/b&gt;</with>
+		</replace>
+	</group>
+	
+    <group id="PlainText">
+		<htmlencode />
+		nog?
+    </group>
+
+</wikiparse>

@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <group>
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		Pre-process
+		<replace>
+			<pattern>@@</pattern>
+			<with>@@k%</with>
+		</replace>
+		
+		Comment
+		<extract>
+			<pattern>&lt;!--([\u0000-\uFFFF]*?)--&gt;</pattern>
+			<prefix>@A@</prefix>
+			<suffix>%</suffix>
+			<match>
+				
+			</match>
+			<inbetween>
+				CData sections
+				<extract>
+					<pattern>&lt;!\[CDATA\[([\u0000-\uFFFF]*?)\]\]&gt;</pattern>
+					<prefix>@B@</prefix>
+					<suffix>%</suffix>
+					<match>
+						
+					</match>
+					<inbetween>
+						<jump>GetTag</jump>
+					</inbetween>
+				</extract>
+			</inbetween>
+		</extract>
+		
+		<jump>DoIndent</jump>
+		
+		Post-process
+		<replace>
+			<pattern>@@k%</pattern>
+			<with>@@</with>
+		</replace>
+
+		<htmlencode></htmlencode>
+		<prepend>&lt;pre&gt;</prepend>
+		<append>&lt;/pre&gt;</append>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+		
+    </group>
+    
+    take tags from the inside out
+    <extract id="GetTag">
+		<multiline>0</multiline>
+		<ignorecase>0</ignorecase>
+		<pattern>(&lt;([^&lt;&gt;\s]+?)[&gt;\s][^&lt;]*?&lt;/\2&gt;|&lt;[^&gt;&lt;]+/&gt;)</pattern>
+		<prefix>@@</prefix>
+		<suffix>%</suffix>
+		<match>
+			<replace>
+				<pattern>^(&lt;[^&gt;]+?&gt;)([^&lt;]+?)(&lt;/[^&gt;]+?&gt;)$</pattern>
+				<with>$1&#xA;@@u%$2&#xA;@@d%$3</with>
+			</replace>
+			<check>
+				<pattern>\n$</pattern>
+				<else>
+					<append>&#xA;</append>
+				</else>
+			</check>
+		</match>
+		<required>1</required>
+		<inbetween>
+			<jump>GetTag</jump>
+		</inbetween>
+    </extract>
+    
+    <group id="DoIndent">
+		<split>
+			<pattern>@@u%([\u0000-\uFFFF]+?)@@d%</pattern>
+			<match>
+				<submatch>
+					<number>1</number>
+				</submatch>
+				<replace>
+					<pattern>^</pattern>
+					<with>&#x9;</with>
+				</replace>
+				<replace>
+					<pattern>&#x9;$</pattern>
+					<with></with>
+				</replace>
+			</match>
+		</split>
+		<check>
+			<pattern>@@u%</pattern>
+			<do>
+				<jump>DoIndent</jump>
+			</do>
+		</check>
+    </group>
+    
+	<debug id="Debug">
+		<skip>2</skip>
+		<do>
+			<htmlencode></htmlencode>
+			<prepend>&lt;pre&gt;</prepend>
+			<append>&lt;/pre&gt;</append>
+		</do>
+	</debug>
+	
+</wikiparse>

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_html_only.xml
+    WikiParse XML to process plain-text to HTML
+    version 1.0.1.1
+    by Stijn Sanders <stijn@yoy.be>
+    2006-01
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    -->
+    
+    <group>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		Treat tabs as spaces
+		<replace>
+			<pattern>\t</pattern>
+			<with> </with>
+		</replace>
+        
+        <htmlencode />
+
+		All EOL's to plain BR's
+		<replace>
+			<pattern>\n</pattern>
+			<with>&lt;br /&gt;&#xA;</with>
+		</replace>
+		
+		Enclose all in a paragraph, remove empty ones
+		<prepend>&lt;p&gt;&#xA;</prepend>
+		<append>&lt;/p&gt;&#xA;</append>
+		<replace>
+			<pattern>&lt;p&gt;\s*?&lt;/p&gt;\s*</pattern>
+			<with></with>
+		</replace>
+		
+		Fix sequented spaces
+		<split>
+			<pattern>(^ | +(:? ))</pattern>
+			<match>
+				<replace>
+					<pattern> </pattern>
+					<with>&amp;nbsp;</with>
+				</replace>
+			</match>
+		</split>
+						
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+
+    </group>
+    
+</wikiparse>

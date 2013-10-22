@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema targetNamespace="http://yoy.be/dev/xsd/wikiparse.xsd" elementFormDefault="qualified"
+	xmlns="http://yoy.be/dev/xsd/wikiparse.xsd" xmlns:mstns="http://yoy.be/dev/xsd/wikiparse.xsd"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>
+	
+	wikiparse.xsd
+	WikiParse XML definition
+	version 1.1.7
+	by Stijn Sanders mailto:stijn@yoy.be
+	2005-12
+
+	CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+	
+	For further information, see http://yoy.be/dev/xsd/wikiparse.txt
+	
+	$Revision: $
+	
+	</xs:documentation>
+	</xs:annotation>
+	<xs:element name="wikiparse" type="sequence">
+		<xs:annotation>
+			<xs:documentation>
+		wikiparse: document root element
+		
+		Can contain any number of operations
+		
+		When rendering, the first operation is performed.
+		Any following operations are supposed to have an id="" attribute and can be jumped to by the jump operation.
+		</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- 
+	root element: all direct children except the first are expected to have an id attribute
+	other id attributes are ignored
+	 -->
+	<xs:complexType name="sequence" mixed="true">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="replace" type="replace">
+				<xs:annotation>
+					<xs:documentation>replace:
+		perform a RegEx replace on the current text
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="replaceif" type="replaceif">
+				<xs:annotation>
+					<xs:documentation>replaceif:
+        replace text using a RegEx, only if the text matches the RegEx
+		[Attention] if only one section matches, the entire contents are processed, 
+		to direct processing to only the matching portion, use split or extract
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="split" type="split">
+				<xs:annotation>
+					<xs:documentation>split:
+		find matches with a RegEx, perform an operation on macthing text
+		and text inbetween, and reassemble the entire text
+		[Attention] the text before and after a match is also an inbetween, 
+		e.g. if the text starts with a match, the first inbetween is performed on the empty
+		text before the first match
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="extract" type="extract">
+				<xs:annotation>
+					<xs:documentation>extract:
+        uses a RegEx to extract sections from the text, performs an operation on the remaining text (in its 
+        entirety), and re-inserts the extracted sections, optionally performing an operation on these sections 
+        (one by one)
+        When extracting, matches are replaced by the match number enclosed in these markers.
+        Before operating any prefix markers that are present are 'secured' by marker code 0, and are re-set 
+        when processing the extract. If the default marker values have an impact on the text, change them to 
+        something approriate. It's advised to take different characters as prefix and suffix, since identical 
+        characters might form unintended markers when processing the extraction. 
+        [Attention] don't use digits [0-9], and make sure the string works both literally and as a RegEx
+        (don't use RegEx command characters)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="submatch" type="submatch">
+				<xs:annotation>
+					<xs:documentation>submatch:
+        take the text of a submatch from a parent RegEx operation
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="check" type="check">
+				<xs:annotation>
+					<xs:documentation>check:
+        check the current text and conditionally perform an operation
+        if no value or pattern are provided, the string is checked to be not empty
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="process" type="process">
+				<xs:annotation>
+					<xs:documentation>process:
+		performs a RegEx on the current text, and performs an operation on the current text for each match.
+		In a way process is similar to &lt;check&gt;, but enables the use of &lt;submatch&gt;
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="wiki" type="wiki">
+				<xs:annotation>
+					<xs:documentation>wiki:
+		check if a WikiPage exists,
+        optionally perform a RegEx replace on the current text to extract the WikiName
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="command" type="emptytag">
+				<xs:annotation>
+					<xs:documentation>command:	
+		perform a command as defined by the current text, it is parsed as a command name followed by one or 
+		more parameters
+		see the wikiEngine documentation for a list of commands and their parameters
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="jump" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>jump:
+		jumps to a child element of the document element
+		the element text is the target ID, a child element of the document root element 
+		with an id attribute set to this ID is searched to jump to
+		[Attention] be carefull about using jumps to create circular references, 
+		code that calls upon itself can cause a stack overflow
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="group" type="sequence">
+				<xs:annotation>
+					<xs:documentation>group:
+		perform a sequence of operations
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="include" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>include:
+		include and parse another wikiparse xml file
+		element text must be an absolute or relative URL to another wikiparse xml file.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="concat" type="sequence">
+				<xs:annotation>
+					<xs:documentation>concat:
+        perform a sequence of operations, each on the same current text, 
+		concatenate the results
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="text" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>text:
+        set the current text to a fixed value
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="length" type="emptytag">
+				<xs:annotation>
+					<xs:documentation>length:
+        replace the current text by the length of the current length (a decimal digit)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="prepend" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>prepend:
+        prepend a certain text to the current text
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="append" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>append:
+        append a certain text to the current text
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="htmlencode" type="emptytag">
+				<xs:annotation>
+					<xs:documentation>htmlencode:
+		encode text ready to be displayed as html
+		[Attention] use this to prevent malicious code insertion (e.g. by using the &lt;script&gt; tag or others)
+				</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="urlencode" type="emptytag">
+				<xs:annotation>
+					<xs:documentation>urlencode:
+		encode text ready to be used in a URL
+		[Attention] use this to prevent malicious code insertion (e.g. by using the &lt;script&gt; tag or others)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="debug" type="debug">
+				<xs:annotation>
+					<xs:documentation>debug:
+		a WikiParseXML developer's best friend
+        make the parser drop anything and return with what it got so far
+        [Attention] use this for debug purposes only!
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="skip" type="sequence">
+				<xs:annotation>
+					<xs:documentation>skip:
+        don't do anything (handy to 'comment out' a section that already has XML comment)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="replace" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="with" type="xs:string" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="replaceif" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="with" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="do" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="else" type="sequence" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="split" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="match" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="inbetween" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="required" type="xs:boolean"></xs:element>
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="extract" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="match" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="inbetween" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="prefix" type="xs:string" minOccurs="0" maxOccurs="1" default="%%" />
+			<xs:element name="suffix" type="xs:string" minOccurs="0" maxOccurs="1" default="#" />
+			<xs:element name="required" type="xs:boolean"></xs:element>
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="submatch" mixed="true">
+		<xs:all>
+			<xs:element name="number" type="xs:integer" minOccurs="0" maxOccurs="1" />
+			<xs:element name="repeat" type="xs:integer" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="check" mixed="true">
+		<xs:all>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="do" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="else" type="sequence" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="process" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="do" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="else" type="sequence" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="wiki" mixed="true">
+		<xs:all>
+			<xs:element name="pattern" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="global" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="ignorecase" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="multiline" type="xs:boolean" minOccurs="0" maxOccurs="1" default="1" />
+			<xs:element name="with" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="found" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="missing" type="sequence" minOccurs="0" maxOccurs="1" />
+			<xs:element name="update" type="xs:boolean" minOccurs="0" maxOccurs="1" default="0" />
+			<xs:element name="updateprefix" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="updatesuffix" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="updatedo" type="sequence" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="emptytag" mixed="true">
+		<xs:all></xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+	<xs:complexType name="debug" mixed="true">
+		<xs:all>
+			<xs:element name="skip" type="xs:integer" minOccurs="0" maxOccurs="1" default="0" />
+			<xs:element name="do" type="sequence" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+		<xs:attribute name="id" type="xs:ID" use="optional" />
+	</xs:complexType>
+</xs:schema>

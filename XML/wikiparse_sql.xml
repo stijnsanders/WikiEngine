@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
+    <!--
+
+    wikiparse_sql.xml
+    WikiParse XML to format SQL code to HTML
+    version 1.0.0.1
+    by Stijn Sanders <stijn@yoy.be>
+    2006-03
+
+    CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+    -->
+    
+    <group>
+
+        CRLF/LF fix
+        <replace>
+			<pattern>\r\n</pattern>
+			<with>&#xA;</with>
+		</replace>
+		<append>&#xA;</append>
+		
+		Treat tabs as spaces
+		<replace>
+			<pattern>\t</pattern>
+			<with> </with>
+		</replace>
+		
+		
+        <htmlencode />
+	
+		Comment, outside of string
+		<split>
+			<multiline>0</multiline>
+			<pattern>'[^']*?'</pattern>
+			<match>
+				<jump>SqlCode</jump>
+			</match>
+			<inbetween>
+				<split>
+					<pattern>/\*[\u0000-\uFFFF]+?\*/</pattern>
+					<match>	
+						<prepend>&lt;span style="color:#0000FF;font-weight:bold;"&gt;</prepend>
+						<append>&lt;/span&gt;</append>
+					</match>
+					<inbetween>
+						<jump>SqlCode</jump>
+					</inbetween>
+				</split>
+			</inbetween>
+		</split>
+		
+		
+		All EOL's to plain BR's
+		<replace>
+			<pattern>\n</pattern>
+			<with>&lt;br /&gt;&#xA;</with>
+		</replace>
+		
+		Enclose all in a paragraph
+		<prepend>&lt;p style="font-family:Sheldon, Lucida Console, monospace;white-space: nowrap"&gt;&#xA;</prepend>
+		<append>&lt;/p&gt;&#xA;</append>
+		
+		Fix sequented spaces
+		<split>
+			<pattern>(^ | +(:? ))</pattern>
+			<match>
+				<replace>
+					<pattern> </pattern>
+					<with>&amp;nbsp;</with>
+				</replace>
+			</match>
+		</split>
+		
+        CRLF/LF fix
+        <replace>
+			<pattern>\n</pattern>
+			<with>&#xD;&#xA;</with>
+		</replace>
+
+    </group>
+    
+    <group id="SqlCode">
+		Strings
+		<split>
+			<pattern>'.*?('|$)</pattern>
+			<match>
+				<prepend>&lt;span style="color:#660000;"&gt;</prepend>
+				<append>&lt;/span&gt;</append>
+			</match>
+			<inbetween>
+				Comment on a line
+				<split>
+					<pattern>//.+$</pattern>
+					<match>
+						<prepend>&lt;span style="color:#0000FF;font-weight:bold;"&gt;</prepend>
+						<append>&lt;/span&gt;</append>
+					</match>
+					<inbetween>
+			
+						Numbers
+						<split>
+							<pattern>\$[0-9A-F]+</pattern>
+							<match>
+								<prepend>&lt;span style="color:#660066;"&gt;</prepend>
+								<append>&lt;/span&gt;</append>
+							</match>
+							<inbetween>
+								<split>
+									<pattern>\b[0-9]+?\b</pattern>
+									<match>
+										<prepend>&lt;span style="color:#660066;"&gt;</prepend>
+										<append>&lt;/span&gt;</append>
+									</match>
+									<inbetween>
+									
+										Punctuation marks
+										<split>
+											<pattern>(&amp;lt;|&amp;gt;|&amp;amp;|[\|=\.,:;/+\-*\(\)\[\]@]+)</pattern>
+											<match>
+												<prepend>&lt;span style="color:#006600"&gt;</prepend>
+												<append>&lt;/span&gt;</append>
+											</match>
+										</split>
+										
+										Reserved words
+										<split>
+											<pattern>\b(select|insert|order|by|for|from|group|having|create|update|case|end|when|commit|rollback|transaction|raiserror|declare|set|on|off|if|exists|where|go|drop|database|table|procedure|varchar|nvarchar|integer|null|datetime|input|output|bit|begin|sum|avg|top|distinct|exec|inner|outer|cross|join|with|or|and|is|return|else|print|open|close|deallocate|cursor|while)\b</pattern>
+											<match>
+												<prepend>&lt;b&gt;</prepend>
+												<append>&lt;/b&gt;</append>
+											</match>
+										</split>
+									
+									</inbetween>
+								</split>
+							</inbetween>
+						</split>
+				
+					</inbetween>
+				</split>
+			</inbetween>
+		</split>
+    </group>
+    
+</wikiparse>
