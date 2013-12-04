@@ -1,26 +1,26 @@
 <?xml version="1.0"?>
 <wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
-    <!--
+	<!--
 
-    wikiparse_pmwiki.xml
-    WikiParse XML to mimic PmWiki
-    version 1.0.12.7
-    by Stijn Sanders <stijn@yoy.be>
-    2013-02
+	wikiparse_pmwiki.xml
+	WikiParse XML to mimic PmWiki
+	version 1.0.12.7
+	by Stijn Sanders <stijn@yoy.be>
+	2013-02
 
-    When adapting for own use, change relative URL prefixes in "LocalURLs" below
+	When adapting for own use, change relative URL prefixes in "LocalURLs" below
 
-    Incoming text is first parsed to extract [= =] sections,
-    WikiLink's are extracted, and then other layout is transformed to HTML.
-    CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
-    To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
+	Incoming text is first parsed to extract [= =] sections,
+	WikiLink's are extracted, and then other layout is transformed to HTML.
+	CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
+	To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
 
-    -->
-    
-    <jump>Start</jump>
+	-->
+	
+	<jump>Start</jump>
 
-    This label is called to replace parse-codes local URL, adapt to your site
-    <group id="LocalURLs">
+	This label is called to replace parse-codes local URL, adapt to your site
+	<group id="LocalURLs">
 		Link to a page that exists
 		<replace>
 			<pattern>@@w%</pattern>
@@ -31,9 +31,9 @@
 			<pattern>@@e%</pattern>
 			<with>pmwiki.php?action=edit?n=</with>
 		</replace>
-    </group>
-    
-    Extract WikiLinks, feel free to change or add other alternatives in the main "(|)"
+	</group>
+	
+	Extract WikiLinks, feel free to change or add other alternatives in the main "(|)"
 	The "`?([A-Z][A-Za-z0-9_]+?[\./])?" prefix handles groups
 	<extract id="FindWikiLinks">
 	
@@ -71,10 +71,10 @@
 	</extract>
 
 
-    <group id="Start">
+	<group id="Start">
 
-        CRLF/LF fix
-        <replace>
+		CRLF/LF fix
+		<replace>
 			<pattern>\r\n</pattern>
 			<with>&#xA;</with>
 		</replace>
@@ -85,9 +85,9 @@
 			<pattern>\t</pattern>
 			<with> </with>
 		</replace>
-        
-        Extract items marked for skipping layout, process inbetweens as one block
-        <extract>
+		
+		Extract items marked for skipping layout, process inbetweens as one block
+		<extract>
 			<pattern>\[([=@])([\u0000-\uFFFF]*?)\1\]</pattern>
 			<prefix>%B%</prefix>
 			<match>
@@ -305,7 +305,7 @@
 								</replace>
 							</match>
 						</split>
-				        
+						
 						Lines ending with backslash, join with next
 						<replace>
 							<pattern>\\\n</pattern>
@@ -317,7 +317,7 @@
 							<pattern>^ *?----+ *?$</pattern>
 							<with>&lt;hr /&gt;</with>
 						</replace>
-				        
+						
 						Headers
 						<replace>
 							<pattern>^!!!!(.*?)$</pattern>
@@ -335,12 +335,12 @@
 							<pattern>^!(.*?)$</pattern>
 							<with>&lt;/p&gt;&#xA;&lt;h1&gt;$1&lt;/h1&gt;&#xA;&lt;p&gt;</with>
 						</replace>
-				        
+						
 						Formatted text
 						<split>
 							<pattern>^ .*?$(\n* .*?$\n?)*</pattern>
 							<match>
-				            
+							
 								Strip preceding spaces
 								<replace>
 									<pattern>^ </pattern>
@@ -446,19 +446,19 @@
 							<with>&lt;$1 style="width:$2;"&gt;</with>
 						</replace>
 
-                    </inbetween>
+					</inbetween>
 				</extract>
 			</inbetween>
 		</extract>
 
-        CRLF/LF fix
-        <replace>
+		CRLF/LF fix
+		<replace>
 			<pattern>\n</pattern>
 			<with>&#xD;&#xA;</with>
 		</replace>
 
-    </group>
-    
+	</group>
+	
 	Does it start with a slash, or an internet protocol, then it's a HyperLink
 	<group  id="ParseLink">
 
@@ -560,8 +560,8 @@
 			</else>
 		</check>
 	</group>
-    
-    <group id="HyperLink">
+	
+	<group id="HyperLink">
 		Check if it's an e-mail address
 		<check>
 			<pattern>^[-a-z0-9\.]+?@[-a-z0-9\.]+?\.[a-z]{2,3}\b</pattern>
@@ -584,26 +584,26 @@
 		<jump>SomeLink</jump>
 	</group>
 
-    Use id="SomeLink" with prefix of form "class##prefix##suffix##"
-    <group id="WikiLinkFound">
+	Use id="SomeLink" with prefix of form "class##prefix##suffix##"
+	<group id="WikiLinkFound">
 		<prepend>wikilink##@@w%####</prepend>
 		<jump>SomeLink</jump>
 	</group>
 
-    <group id="WikiLinkMissing">
-        Suffix with pre-codes because HTMLencode later
-        <prepend>wikiedit##@@e%##@@hspan%?@@h/span%##</prepend>
-        <jump>SomeLink</jump>
-    </group>
+	<group id="WikiLinkMissing">
+		Suffix with pre-codes because HTMLencode later
+		<prepend>wikiedit##@@e%##@@hspan%?@@h/span%##</prepend>
+		<jump>SomeLink</jump>
+	</group>
 
-    Display some link, prefix text with: class##prefix##suffix##
-    <group id="SomeLink">
-        HTMLEncode up front!
-        <htmlencode></htmlencode>
+	Display some link, prefix text with: class##prefix##suffix##
+	<group id="SomeLink">
+		HTMLEncode up front!
+		<htmlencode></htmlencode>
 
-        Ending tags /a are in code here to pick-up a plain EOL later
-        Check if a caption or title is provided, first with both name and title
-        <replaceif>
+		Ending tags /a are in code here to pick-up a plain EOL later
+		Check if a caption or title is provided, first with both name and title
+		<replaceif>
 			<pattern>^(.+?)##(.*?)##(.*?)##([^\|]*?) *?\| *?([^\|]*?) *?\| *([\u0000-\uFFFF]*)$</pattern>
 			<with>&lt;a href="$2[[$4]]" title="$6" class="$1"&gt;$5$3@@h/a%</with>
 			<else>
@@ -648,95 +648,95 @@
 		
 			<!-- not really needed
 			Clear any empty lines
-            <replace>
-                <pattern>^ *?\n</pattern>
-                <with></with>
-            </replace>
-            -->            
-            
-            Start/end
-            <prepend>&lt;div class="indent"&gt;&#xA;</prepend>
-            <append>&lt;/div&gt;&#xA;</append>
-            
-            Remove single level prefixes, and one off other levels
-            <replace>
+			<replace>
+				<pattern>^ *?\n</pattern>
+				<with></with>
+			</replace>
+			-->            
+			
+			Start/end
+			<prepend>&lt;div class="indent"&gt;&#xA;</prepend>
+			<append>&lt;/div&gt;&#xA;</append>
+			
+			Remove single level prefixes, and one off other levels
+			<replace>
 				<pattern>^(-&amp;gt;|-(-+&amp;gt;))</pattern>
 				<with>$2</with>
 			</replace>
-            
-            Check deeper levels
-            <check>
+			
+			Check deeper levels
+			<check>
 				<pattern>^-+&amp;gt;</pattern>
 				<do>
 					<jump>DoIndent</jump>
 				</do>
-			</check>			
-            
+			</check>
+			
 		</match>
 	</split>
 
-    <split id="DoLists">
+	<split id="DoLists">
 		<pattern>^([\*#:].*?$\n?( *?\n)?)+</pattern>
 		<match>
-        
-            Clear any empty lines
-            <replace>
+		
+			Clear any empty lines
+			<replace>
 				<pattern>^ *?\n</pattern>
 				<with></with>
 			</replace>
-            
-            Check list type, start/end
-            <check>
+			
+			Check list type, start/end
+			<check>
 				<pattern>^#</pattern>
 				<multiline>0</multiline>
 				<do>
-                    Ordered List
-                    <prepend>&lt;/p&gt;&lt;ol&gt;&#xA;</prepend>
-                    <append>&lt;/ol&gt;&lt;p&gt;&#xA;</append>
-                </do>
+					Ordered List
+					<prepend>&lt;/p&gt;&lt;ol&gt;&#xA;</prepend>
+					<append>&lt;/ol&gt;&lt;p&gt;&#xA;</append>
+				</do>
 				<else>
 					<check>
 						<pattern>^:</pattern>
 						<multiline>0</multiline>
 						<do>
-                            Definition list
-                            <prepend>&lt;/p&gt;&lt;dl&gt;&#xA;</prepend>
-                            <append>&lt;/dl&gt;&lt;p&gt;&#xA;</append>
-                        </do>
+							Definition list
+							<prepend>&lt;/p&gt;&lt;dl&gt;&#xA;</prepend>
+							<append>&lt;/dl&gt;&lt;p&gt;&#xA;</append>
+						</do>
 						<else>
-                            check, pattern ^\*
-                            Unordered list
-                            <prepend>&lt;/p&gt;&lt;ul&gt;&#xA;</prepend>
-                            <append>&lt;/ul&gt;&lt;p&gt;&#xA;</append>
-                        </else>
+							check, pattern ^\*
+							Unordered list
+							<prepend>&lt;/p&gt;&lt;ul&gt;&#xA;</prepend>
+							<append>&lt;/ul&gt;&lt;p&gt;&#xA;</append>
+						</else>
 					</check>
 				</else>
 			</check>
-
-            Check nested levels
-            <extract>
-                <pattern>(^[\*#:][\*#:].*?$\n?)+</pattern>
-                <prefix>%G%</prefix>
-                Extraction needs a suffix with EOL to preserve line breaks
-                <suffix>#&#xA;</suffix>
-                <match>
-
-                    Remove prefixes
-                    <replace>
+			
+			Check nested levels
+			<extract>
+				<pattern>(^[\*#:][\*#:].*?$\n?)+</pattern>
+				<prefix>%G%</prefix>
+				Extraction needs a suffix with EOL to preserve line breaks
+				<suffix>#&#xA;</suffix>
+				<match>
+				
+					Remove prefixes
+					<replace>
 						<pattern>^[\*#:]</pattern>
 						<with></with>
 					</replace>
-
-                    Recurse
-                    <jump>DoLists</jump>
-
-                    Add indentation
-                    <replace>
+					
+					Recurse
+					<jump>DoLists</jump>
+					
+					Add indentation
+					<replace>
 						<pattern>^(?!$)</pattern>
 						<with>&#x20;&#x20;&#x20;&#x20;</with>
 					</replace>
-                </match>
-                <inbetween>
+				</match>
+				<inbetween>
 					Take an item per line
 					<split>
 						<pattern>\n</pattern>
@@ -763,8 +763,8 @@
 							</replaceif>
 						</inbetween>
 					</split>
-                </inbetween>
-            </extract>
+				</inbetween>
+			</extract>
 
 			Fix nested lists
 			<replace>
@@ -772,66 +772,66 @@
 				<with>&#xA;&#x20;&#x20;&#x20;&#x20;&lt;$2&gt;$3&lt;/$1&gt;</with>
 			</replace>
 
-        </match>
+		</match>
 	</split>
 
     <split id="DoTables">
 		<pattern>(^\|\|.+?$\n?( *?\n)?)+</pattern>
 		<match>
 
-            Clear any empty lines
-            <replace>
+			Clear any empty lines
+			<replace>
 				<pattern>^ *?\n</pattern>
 				<with></with>
 			</replace>
-                        
-            Start/end
-            <prepend>&lt;/p&gt;&lt;table class="basetable"&gt;&lt;tbody&gt;&#xA;</prepend>
-            Rows and cells
-            <split>
+			
+			Start/end
+			<prepend>&lt;/p&gt;&lt;table class="basetable"&gt;&lt;tbody&gt;&#xA;</prepend>
+			Rows and cells
+			<split>
 				<pattern>^\|\|.*?$</pattern>
 				<match>
-                    Remove overfluxious prefixes
-                    <replace>
+					Remove overfluxious prefixes
+					<replace>
 						<pattern>^(\|\|)+</pattern>
 						<with>||</with>
 					</replace>
 
-                    Create colspan codes
-                    <split>
-                    	<pattern>\|\|(\|\|)+</pattern>
-                        <match>
-                            <replace>
-                                <pattern>\|\|</pattern>
-                                <with>x</with>
-                            </replace>
-                            <length></length>
-                            <prepend>@@s</prepend>
-                            <append>%||</append>
-                        </match>
-                    </split>
+						Create colspan codes
+						<split>
+							<pattern>\|\|(\|\|)+</pattern>
+							<match>
+								<replace>
+									<pattern>\|\|</pattern>
+									<with>x</with>
+								</replace>
+								<length></length>
+								<prepend>@@s</prepend>
+								<append>%||</append>
+							</match>
+						</split>
 
-                    Remove ending delimiter
-                    <replace>
+					Remove ending delimiter
+					<replace>
 						<pattern>\|\| *?$</pattern>
 						<with></with>
 					</replace>
 
-                    Plain cells
+					Plain cells
 					<replace>
 						<pattern>\|\|</pattern>
 						<with>&lt;/td&gt;&lt;td&gt;</with>
 					</replace>
 
-                    Row tags, first cell will close an unexisting previous cell
-                    <prepend>&lt;tr valign="top"&gt;</prepend>
-                    <append>&lt;/td&gt;&lt;/tr&gt;</append>
+					Row tags, first cell will close an unexisting previous cell
+					<prepend>&lt;tr valign="top"&gt;</prepend>
+					<append>&lt;/td&gt;&lt;/tr&gt;</append>
 
-                </match>
+				</match>
 			</split>
 
-            Fix first cells
-            <replace>
+			Fix first cells
+			<replace>
 				<pattern>&lt;tr([^&gt;]*?)&gt;&lt;/td&gt;</pattern>
 				<with>&lt;tr$1&gt;</with>
 			</replace>
@@ -840,10 +840,10 @@
 			<split>
 				<pattern>&lt;td[^&gt;]*?&gt;.+?&lt;/td&gt;</pattern>
 				<match>
-                    <replace>
+					<replace>
 						<pattern>&lt;(td[^&gt;]*?)&gt;(.+?)@@s([0-9]+?)%&lt;/td&gt;</pattern>
-                        <with>&lt;$1 colspan="$3"&gt;$2&lt;/td&gt;</with>
-                    </replace>
+						<with>&lt;$1 colspan="$3"&gt;$2&lt;/td&gt;</with>
+					</replace>
 					<replace>
 						<pattern>&lt;(td[^&gt;]*?)&gt; *?&lt;/td&gt;</pattern>
 						<with>&lt;$1&gt;&amp;nbsp;&lt;/td&gt;</with>
@@ -864,90 +864,90 @@
 			</split>
 			
 
-            Fix header cells
-            <replace>
+			Fix header cells
+			<replace>
 				<pattern>&lt;td([^&gt;]*?)&gt;!(.*?)&lt;/td&gt;</pattern>
 				<with>&lt;th$1&gt;$2&lt;/th&gt;</with>
 			</replace>
-            
-            <append>&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&#xA;</append>
-                    
-        </match>
+			
+			<append>&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&#xA;</append>
+					
+		</match>
 	</split>
 
-    <!--
-    <split id="DoTables_WithSpanNumbers">
+	<!--
+	<split id="DoTables_WithSpanNumbers">
 		<pattern>(^\|-?[0-9]*?\|.+?$\n?( *?\n)?)+</pattern>
 		<match>
 
-            Clear any empty lines
-            <replace>
+			Clear any empty lines
+			<replace>
 				<pattern>^ *?\n</pattern>
 				<with></with>
 			</replace>
-                        
-            Check nested tables
-            <extract>
-                <pattern>(^(\|-?[0-9]*?\|){2,}.+?$\n?)+</pattern>
-                <prefix>%H%</prefix>
-                Extraction needs a suffix with EOL to preserve line breaks
-                <suffix>#&#xA;</suffix>
-                <match>
-                    Remove prefixes
-                    <replace>
+			
+			Check nested tables
+			<extract>
+				<pattern>(^(\|-?[0-9]*?\|){2,}.+?$\n?)+</pattern>
+				<prefix>%H%</prefix>
+				Extraction needs a suffix with EOL to preserve line breaks
+				<suffix>#&#xA;</suffix>
+				<match>
+					Remove prefixes
+					<replace>
 						<pattern>^\|-?[0-9]*?\|</pattern>
 						<with></with>
 					</replace>
 
-                    Recurse
-                    <jump>DoTables</jump>
+					Recurse
+					<jump>DoTables</jump>
 
-                    Add indentation
-                    <replace>
+					Add indentation
+					<replace>
 						<pattern>^&lt;</pattern>
 						<with>&#x20;&#x20;&#x20;&#x20;&lt;</with>
 					</replace>
-                    
-                    Enclose in a cell (alignment?)
-                    <prepend>&lt;tr valign="top"&gt;&lt;td&gt;&#xA;</prepend>
-                    <append>&lt;/td&gt;&lt;/tr&gt;&#xA;</append>
+					
+					Enclose in a cell (alignment?)
+					<prepend>&lt;tr valign="top"&gt;&lt;td&gt;&#xA;</prepend>
+					<append>&lt;/td&gt;&lt;/tr&gt;&#xA;</append>
 
-                </match>
-                <inbetween>
-                    Start/end
-                    <prepend>&lt;/p&gt;&lt;table class="basetable"&gt;&lt;tbody&gt;&#xA;</prepend>
-                    Rows and cells
-                    <split>
+				</match>
+				<inbetween>
+					Start/end
+					<prepend>&lt;/p&gt;&lt;table class="basetable"&gt;&lt;tbody&gt;&#xA;</prepend>
+					Rows and cells
+					<split>
 						<pattern>^\|-?[0-9]*?\|.*?$</pattern>
 						<match>
                             Remove ending delimiter
-                            <replace>
+							<replace>
 								<pattern>\|-?[0-9]*?\| *?$</pattern>
 								<with></with>
 							</replace>
-                            Row tags, first cell will close an unexisting previous cell
-                            <prepend>&lt;tr valign="top"&gt;</prepend>
-                            <append>&lt;/td&gt;&lt;/tr&gt;</append>
-                            Cells with rowspan
-                            <replace>
+							Row tags, first cell will close an unexisting previous cell
+							<prepend>&lt;tr valign="top"&gt;</prepend>
+							<append>&lt;/td&gt;&lt;/tr&gt;</append>
+							Cells with rowspan
+							<replace>
 								<pattern>(^|[^\|])\|-([0-9]+?)\|</pattern>
 								<with>$1&lt;/td&gt;&lt;td rowspan="$2"&gt;</with>
 							</replace>
-                            Cells with colspan
-                            <replace>
+							Cells with colspan
+							<replace>
 								<pattern>(^|[^\|])\|([0-9]+?)\|</pattern>
 								<with>$1&lt;/td&gt;&lt;td colspan="$2"&gt;</with>
 							</replace>
-                            Plain cells
-                            <replace>
+							Plain cells
+							<replace>
 								<pattern>\|\|</pattern>
 								<with>&lt;/td&gt;&lt;td&gt;</with>
 							</replace>
-                        </match>
+						</match>
 					</split>
 
-                    Fix first cells
-                    <replace>
+					Fix first cells
+					<replace>
 						<pattern>&lt;tr([^&gt;]*?)&gt;&lt;/td&gt;</pattern>
 						<with>&lt;tr$1&gt;</with>
 					</replace>
@@ -976,18 +976,18 @@
 					</split>
 					
 
-                    Fix header cells
-                    <replace>
+					Fix header cells
+					<replace>
 						<pattern>&lt;td([^&gt;]*?)&gt;!(.*?)&lt;/td&gt;</pattern>
 						<with>&lt;th$1&gt;$2&lt;/th&gt;</with>
 					</replace>
-                    
-                    <append>&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&#xA;</append>
-                    
-                </inbetween>
-            </extract>
+					
+					<append>&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;&#xA;</append>
+					
+				</inbetween>
+			</extract>
 
-        </match>
+		</match>
 	</split>
 	-->
 

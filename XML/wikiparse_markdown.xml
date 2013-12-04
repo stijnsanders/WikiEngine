@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <wikiparse xmlns="http://yoy.be/dev/xsd/wikiparse.xsd">
-    <!--
+	<!--
 
-    wikiparse_markdown.xml
-    WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
-    version 1.0.0.40
-    by Stijn Sanders <stijn@yoy.be>
-    2012-12
+	wikiparse_markdown.xml
+	WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
+	version 1.0.0.40
+	by Stijn Sanders <stijn@yoy.be>
+	2012-12
 
-    CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
-    To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
+	CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
+	To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
 
-    -->
-    
-    <group>
-        CRLF/LF fix
-        <replace>
+	-->
+
+	<group>
+		CRLF/LF fix
+		<replace>
 			<pattern>\r\n</pattern>
 			<with>&#xA;</with>
 		</replace>
@@ -23,13 +23,13 @@
 		
 		<jump>MarkDown</jump>
 		
-        CRLF/LF fix
-        <replace>
+		CRLF/LF fix
+		<replace>
 			<pattern>\n</pattern>
 			<with>&#xD;&#xA;</with>
 		</replace>
-    </group>
-    
+	</group>
+
 	<group id="MarkDown">
 		//TODO: global escapes for \\[-\\`\*_\{\}\[\]\(\)#\+\.!]
 		Headers: underlined
