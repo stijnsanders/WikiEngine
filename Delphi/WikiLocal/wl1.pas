@@ -112,8 +112,6 @@ type
     procedure WebMainBeforeNavigate2(Sender: TObject;
       const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
-    procedure WebSidebarStatusTextChange(Sender: TObject;
-      const Text: WideString);
     procedure WebMainStatusTextChange(Sender: TObject;
       const Text: WideString);
     procedure FormCreate(Sender: TObject);
@@ -158,6 +156,8 @@ type
     procedure tvSideListChange(Sender: TObject; Node: TTreeNode);
     procedure tvSideListExpanding(Sender: TObject; Node: TTreeNode;
       var AllowExpansion: Boolean);
+    procedure tvSideListContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     FIsEditing, FPageModified: boolean;
     FWikiPage, FWikiGroup, FGroupDelim, FPagePath, FContextLink: string;
@@ -462,16 +462,24 @@ begin
   WebMainLock:=Showing;
 end;
 
-procedure TfrmWikiLocalMain.WebSidebarStatusTextChange(Sender: TObject;
-  const Text: WideString);
-begin
-  StatusBar1.Panels[3].Text:=Text;
-end;
-
 procedure TfrmWikiLocalMain.WebMainStatusTextChange(Sender: TObject;
   const Text: WideString);
+var
+  i:integer;
+  s:string;
 begin
-  StatusBar1.Panels[3].Text:=Text;
+  s:=Text;
+  if (FPagePath='') and (WebMain.Document<>nil) then
+   begin
+    FPagePath:=(WebMain.Document as IHTMLDocument2).location.href;
+    i:=Length(FPagePath);
+    while (i<>0) and (FPagePath[i]<>'/') do dec(i);
+    SetLength(FPagePath,i);
+   end
+  else
+    i:=Length(FPagePath);
+  if Copy(s,1,i)=FPagePath then s:='wikilocal://'+Copy(s,i,Length(s)-i+1);
+  StatusBar1.Panels[3].Text:=s;
 end;
 
 procedure TfrmWikiLocalMain.SetIsEditing(const Value: boolean);
@@ -531,6 +539,7 @@ begin
            begin
             s:=FWikiGroup+FGroupDelim+WikiPage;
             panPageName.Caption:=s;
+            panPageName.Hint:=s;
             Caption:=s+' - WikiLocal';
             Application.Title:=Caption;
             i:=cbPage.Items.IndexOf(s);
@@ -1035,12 +1044,16 @@ begin
 end;
 
 procedure TfrmWikiLocalMain.ShowLinks(w:string);
+var
+  s:string;
 begin
   WebSidebar.Visible:=false;
   panSearch.Visible:=false;
   tvSideList.Visible:=true;
   btnCloseSideList.Visible:=true;
-  panGroupName.Caption:='"'+w+'" Links';
+  s:='"'+w+'" Links';
+  panGroupName.Caption:=s;
+  panGroupName.Hint:=s;
   SideLoadItems(w,ExtWikiLinks);
 end;
 
@@ -1050,12 +1063,16 @@ begin
 end;
 
 procedure TfrmWikiLocalMain.ShowBackLinks(w:string);
+var
+  s:string;
 begin
   WebSidebar.Visible:=false;
   panSearch.Visible:=false;
   tvSideList.Visible:=true;
   btnCloseSideList.Visible:=true;
-  panGroupName.Caption:='"'+w+'" Backlinks';
+  s:='"'+w+'" Backlinks';
+  panGroupName.Caption:=s;
+  panGroupName.Hint:=s;
   SideLoadItems(w,ExtWikiBackLinks);
 end;
 
@@ -1221,6 +1238,7 @@ begin
   tvSideList.Visible:=true;
   btnCloseSideList.Visible:=true;
   panGroupName.Caption:='Search';
+  panGroupName.Hint:='Search';
   txtSearchText.SelectAll;
   txtSearchText.SetFocus;
 end;
@@ -1389,7 +1407,7 @@ begin
         FContextLink:=ea.href;
         if FPagePath='' then
          begin
-          FPagePath:=(WebSidebar.Document as IHTMLDocument2).location.href;
+          FPagePath:=(WebMain.Document as IHTMLDocument2).location.href;
           i:=Length(FPagePath);
           while (i<>0) and (FPagePath[i]<>'/') do dec(i);
           SetLength(FPagePath,i);
@@ -1552,6 +1570,7 @@ begin
   WebSidebar.Visible:=false;
   btnCloseSideList.Visible:=false;
   panGroupName.Caption:=FWikiGroup;
+  panGroupName.Hint:=FWikiGroup;
 end;
 
 procedure TfrmWikiLocalMain.tvSideListChange(Sender: TObject; Node: TTreeNode);
@@ -1643,6 +1662,15 @@ begin
       sl.Free;
     end;
    end;
+end;
+
+procedure TfrmWikiLocalMain.tvSideListContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if tvSideList.Selected=nil then
+    FContextLink:=''
+  else
+    FContextLink:='wikilocal:///view/'+tvSideList.Selected.Text;
 end;
 
 end.

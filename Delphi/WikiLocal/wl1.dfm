@@ -125,7 +125,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Width = 41
       Height = 41
       TabOrder = 0
-      OnStatusTextChange = WebSidebarStatusTextChange
+      OnStatusTextChange = WebMainStatusTextChange
       OnBeforeNavigate2 = WebSidebarBeforeNavigate2
       OnNewWindow2 = WebSidebarNewWindow2
       ControlData = {
@@ -152,7 +152,9 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Font.Name = 'Verdana'
       Font.Style = [fsBold]
       ParentFont = False
+      ParentShowHint = False
       PopupMenu = pmSideBar
+      ShowHint = True
       TabOrder = 1
       OnDblClick = HomePage1Click
       DesignSize = (
@@ -245,10 +247,13 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       BorderStyle = bsNone
       HideSelection = False
       Indent = 19
+      PopupMenu = pmLink
       ReadOnly = True
+      RightClickSelect = True
       TabOrder = 3
       Visible = False
       OnChange = tvSideListChange
+      OnContextPopup = tvSideListContextPopup
       OnExpanding = tvSideListExpanding
     end
   end
@@ -401,7 +406,9 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Font.Name = 'Verdana'
       Font.Style = [fsBold]
       ParentFont = False
+      ParentShowHint = False
       PopupMenu = pmPage
+      ShowHint = True
       TabOrder = 2
       OnDblClick = btnEditClick
     end
