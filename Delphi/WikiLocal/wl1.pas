@@ -160,7 +160,7 @@ type
       var AllowExpansion: Boolean);
   private
     FIsEditing, FPageModified: boolean;
-    FWikiPage, FWikiGroup, FGroupDelim, FContextLink: string;
+    FWikiPage, FWikiGroup, FGroupDelim, FPagePath, FContextLink: string;
     FWikiPageAge, FWikiSideBarAge: TDateTime;
     procedure SetIsEditing(const Value: boolean);
     procedure SetWikiPage(const Value: string);
@@ -261,6 +261,7 @@ var
 begin
   LPath:=ExtractFilePath(Application.ExeName);
   FGroupDelim:='.';
+  FPagePath:='';
 
   if FileExists(LPath+'WikiLocal.ini') then
    begin
@@ -492,7 +493,7 @@ var
   body:IHTMLElement;
   s,g,w,RedirectTo:string;
   Loaded,Found,LoopFound,Redirect:boolean;
-  i:integer;
+  i,sp1:integer;
   sp:real;
 begin
   if DoSidebar or DoMain then
@@ -640,7 +641,11 @@ begin
     txtEdit.Modified:=false;
     body:=(WebMain.Document as IHTMLDocument2).body;
     try
-      with body as IHTMLElement2 do sp:=(scrollTop)/(scrollHeight-clientHeight);
+      with body as IHTMLElement2 do
+       begin
+        sp1:=scrollHeight;
+        sp:=(scrollTop)/(sp1-clientHeight);
+       end;
       body.innerHTML:=Engine.Render(txtEdit.Text,FWikiGroup);
 
       lbModifications.Visible:=Engine.ModificationCount<>0;
@@ -651,7 +656,9 @@ begin
       if (txtEdit.SelLength=0) and (txtEdit.SelStart=Length(txtEdit.Text)) then
         with body as IHTMLElement2 do scrollTop:=scrollHeight
       else
-        with body as IHTMLElement2 do scrollTop:=Round((scrollHeight-clientHeight)*sp);
+        with body as IHTMLElement2 do
+          if scrollHeight<>sp1 then
+            scrollTop:=Round((scrollHeight-clientHeight)*sp);
 
     except
       on e:Exception do
@@ -1360,6 +1367,7 @@ procedure TfrmWikiLocalMain.ApplicationEvents1Message(var Msg: tagMSG;
 var
   e:IHTMLElement;
   ea:IHTMLAnchorElement;
+  i:integer;
 begin
   if (Msg.message=WM_RBUTTONDOWN) and ((Msg.wParam and MK_CONTROL)=0) then
    begin
@@ -1379,6 +1387,17 @@ begin
       try
         ea:=e as IHTMLAnchorElement;
         FContextLink:=ea.href;
+        if FPagePath='' then
+         begin
+          FPagePath:=(WebSidebar.Document as IHTMLDocument2).location.href;
+          i:=Length(FPagePath);
+          while (i<>0) and (FPagePath[i]<>'/') do dec(i);
+          SetLength(FPagePath,i);
+         end
+        else
+          i:=Length(FPagePath);
+        if Copy(FContextLink,1,i)=FPagePath then FContextLink:='wikilocal://'+
+          Copy(FContextLink,i,Length(FContextLink)-i+1);
         miLinkFollow.Enabled:=Copy(FContextLink,1,18)='wikilocal:///view/';
       except
         on e:EIntfCastError do
