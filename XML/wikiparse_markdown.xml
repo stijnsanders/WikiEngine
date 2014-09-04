@@ -4,9 +4,9 @@
 
 	wikiparse_markdown.xml
 	WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
-	version 1.0.0.40
+	version 1.0.2.59
 	by Stijn Sanders <stijn@yoy.be>
-	2012-12
+	2014-09
 
 	CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
 	To match over lines "[\u0000-\uFFFF]" is used in stead of ".".
@@ -31,6 +31,9 @@
 	</group>
 
 	<group id="MarkDown">
+	
+		<jump>DoRawHtml</jump>
+	
 		//TODO: global escapes for \\[-\\`\*_\{\}\[\]\(\)#\+\.!]
 		Headers: underlined
 		<replace>
@@ -187,7 +190,6 @@
 					<pattern>^(.+)$</pattern>
 					<with>&lt;a href="mailto:$1"&gt;$1&lt;/a&gt;</with>
 				</replace>
-				<debug />
 			</match>
 		</split>
 		
@@ -216,7 +218,7 @@
 		
 		Clip superfluous empty paragraphs generated above
 		<replace>
-			<pattern>&lt;p&gt;&lt;/p&gt;&#xA;</pattern>
+			<pattern>&lt;p&gt;&#xA;?&lt;/p&gt;&#xA;</pattern>
 			<with></with>
 		</replace>
 		
@@ -226,7 +228,6 @@
 			<with>&lt;br /&gt;&#xA;</with>
 		</replace>
 		
-		<jump>DoRawHtml</jump>
 		<jump>DoImages</jump>
 		<jump>DoLinks</jump>
 		
@@ -235,13 +236,22 @@
 	<group id="DoLists">
 		<split>
 			<pattern>(^|\n\s*\n)(([-\+\*]|\d+\.)[ \t].*(\n|$)(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?((\s*\n)?((   ?|\t).*\n)+(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?)*)+</pattern>
-			<multiline>0</multiline>
 			<match>
 				<replace>
 					<pattern>^\n</pattern>
 					<multiline>0</multiline>
 					<with></with>
 				</replace>
+				<check>
+					<pattern>\n\n(?!$)</pattern>
+					<do>
+						<replace>
+							<pattern>\n$</pattern>
+							<multiline>0</multiline>
+							<with></with>
+						</replace>
+					</do>
+				</check>
 				<check>
 					<pattern>^\d</pattern>
 					<multiline>0</multiline>

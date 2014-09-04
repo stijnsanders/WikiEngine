@@ -4,9 +4,9 @@
 
     wikiparse_pmwiki_nolinks.xml
     WikiParse XML to mimic PmWiki, without wikilinks
-    version 1.0.12.7
+    version 1.0.12.8
     by Stijn Sanders <stijn@yoy.be>
-    2013-02
+    2014-07
 
     Much similar to wikiparse_pmwiki.xml, this WikiParseXML uses PMWiki-style make-up code, but doesn't
     resolve WikiName's to links. This is handy to use the WikiEdit previewer to prepare documents for publication.
@@ -542,7 +542,7 @@
             Check nested levels
             <extract>
                 <pattern>(^[\*#:][\*#:].*?$\n?)+</pattern>
-                <prefix>%G%</prefix>
+                <prefix>%K%</prefix>
                 Extraction needs a suffix with EOL to preserve line breaks
                 <suffix>#&#xA;</suffix>
                 <match>
@@ -570,7 +570,7 @@
 							Enclose items of list
 							<replaceif>
 								Definition items first
-								<pattern>^: *((&lt;[^&gt;]+&gt;|.)+) *?: *?(.*)$</pattern>
+								<pattern>^: *((&lt;[^&gt;]+&gt;|.)+?) *?: *?(.*)$</pattern>
 								<with>  &lt;dt&gt;$1&lt;/dt&gt;&lt;dd&gt;$3&lt;/dd&gt;</with>
 								<else>
 									Or any with only a term

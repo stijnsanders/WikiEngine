@@ -4,9 +4,9 @@
 
 	wikiparse_pmwiki.xml
 	WikiParse XML to mimic PmWiki
-	version 1.0.12.7
+	version 1.0.12.8
 	by Stijn Sanders <stijn@yoy.be>
-	2013-02
+	2014-07
 
 	When adapting for own use, change relative URL prefixes in "LocalURLs" below
 
@@ -716,7 +716,7 @@
 			Check nested levels
 			<extract>
 				<pattern>(^[\*#:][\*#:].*?$\n?)+</pattern>
-				<prefix>%G%</prefix>
+				<prefix>%K%</prefix>
 				Extraction needs a suffix with EOL to preserve line breaks
 				<suffix>#&#xA;</suffix>
 				<match>
@@ -744,7 +744,7 @@
 							Enclose items of list
 							<replaceif>
 								Definition items first
-								<pattern>^: *((&lt;[^&gt;]+&gt;|.)+) *?: *?(.*)$</pattern>
+								<pattern>^: *((&lt;[^&gt;]+&gt;|.)+?) *?: *?(.*)$</pattern>
 								<with>  &lt;dt&gt;$1&lt;/dt&gt;&lt;dd&gt;$3&lt;/dd&gt;</with>
 								<else>
 									Or any with only a term
@@ -889,7 +889,7 @@
 			Check nested tables
 			<extract>
 				<pattern>(^(\|-?[0-9]*?\|){2,}.+?$\n?)+</pattern>
-				<prefix>%H%</prefix>
+				<prefix>%L%</prefix>
 				Extraction needs a suffix with EOL to preserve line breaks
 				<suffix>#&#xA;</suffix>
 				<match>

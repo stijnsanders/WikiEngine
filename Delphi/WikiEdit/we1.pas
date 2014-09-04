@@ -154,6 +154,12 @@ begin
   else
     LXmlPath:=ParamStr(1);
 
+  if ParamCount=2 then
+   begin
+    Memo1.Lines.LoadFromFile(ParamStr(2));
+    Memo1.Modified:=true;
+   end;
+
   Engine.Groups:=true;
 
   if FileExists(LPath+'WikiEdit.udl') then
