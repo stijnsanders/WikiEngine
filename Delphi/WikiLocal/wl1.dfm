@@ -1,6 +1,6 @@
 object frmWikiLocalMain: TfrmWikiLocalMain
-  Left = 243
-  Top = 53
+  Left = 316
+  Top = 139
   Width = 601
   Height = 480
   Caption = 'WikiLocal'
@@ -21,6 +21,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
     Top = 25
     Width = 4
     Height = 398
+    Cursor = crHSplit
     OnMoved = Splitter1Moved
   end
   object panPage: TPanel
@@ -42,7 +43,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Anchors = [akTop, akRight]
       Caption = 'Go'
       PopupMenu = pmPage
-      TabOrder = 2
+      TabOrder = 1
       OnClick = btnGoClick
     end
     object btnEdit: TButton
@@ -53,7 +54,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Action = actEdit
       Anchors = [akTop, akRight]
       PopupMenu = pmPage
-      TabOrder = 3
+      TabOrder = 2
     end
     object cbPage: TComboBox
       Left = 48
@@ -65,7 +66,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Anchors = [akLeft, akTop, akRight]
       DropDownCount = 32
       ItemHeight = 16
-      TabOrder = 4
+      TabOrder = 0
       OnClick = cbPageClick
       OnDblClick = cbPageDblClick
       OnKeyPress = cbPageKeyPress
@@ -77,7 +78,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Height = 25
       Action = actBack
       PopupMenu = pmPage
-      TabOrder = 0
+      TabOrder = 3
     end
     object btnForward: TButton
       Left = 24
@@ -86,7 +87,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Height = 25
       Action = actForward
       PopupMenu = pmPage
-      TabOrder = 1
+      TabOrder = 4
     end
   end
   object StatusBar1: TStatusBar
@@ -107,6 +108,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       item
         Width = 50
       end>
+    SimplePanel = False
   end
   object panSidebar: TPanel
     Left = 0
@@ -114,31 +116,15 @@ object frmWikiLocalMain: TfrmWikiLocalMain
     Width = 180
     Height = 398
     Align = alLeft
-    BevelOuter = bvLowered
+    BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
       180
       398)
-    object WebSidebar: TWebBrowser
-      Left = 8
-      Top = 184
-      Width = 41
-      Height = 41
-      TabOrder = 0
-      OnStatusTextChange = WebMainStatusTextChange
-      OnBeforeNavigate2 = WebSidebarBeforeNavigate2
-      OnNewWindow2 = WebSidebarNewWindow2
-      ControlData = {
-        4C0000003D0400003D0400000000000000000000000000000000000000000000
-        000000004C000000000000000000000001000000E0D057007335CF11AE690800
-        2B2E126208000000000000004C0000000114020000000000C000000000000046
-        8000000000000000000000000000000000000000000000000000000000000000
-        00000000000000000100000000000000000000000000000000000000}
-    end
     object panGroupName: TPanel
-      Left = 1
-      Top = 1
-      Width = 178
+      Left = 0
+      Top = 0
+      Width = 180
       Height = 41
       Align = alTop
       Alignment = taLeftJustify
@@ -157,104 +143,123 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       ShowHint = True
       TabOrder = 1
       OnDblClick = HomePage1Click
-      DesignSize = (
-        178
-        41)
-      object btnCloseSideList: TButton
-        Left = 148
-        Top = 10
-        Width = 25
-        Height = 25
-        Anchors = [akTop, akRight]
-        Caption = 'x'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clCaptionText
-        Font.Height = -11
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        Visible = False
-        OnClick = btnCloseSideListClick
-      end
     end
-    object panSearch: TPanel
-      Left = 1
-      Top = 42
-      Width = 178
-      Height = 127
-      Align = alTop
-      BevelOuter = bvNone
+    object btnCloseSideList: TButton
+      Left = 148
+      Top = 10
+      Width = 25
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'x'
+      TabOrder = 0
+      Visible = False
+      OnClick = btnCloseSideListClick
+    end
+    object panSideView: TPanel
+      Left = 0
+      Top = 41
+      Width = 180
+      Height = 357
+      Align = alClient
+      BevelOuter = bvLowered
       TabOrder = 2
-      Visible = False
       DesignSize = (
-        178
-        127)
-      object lblMatchCount: TLabel
+        180
+        357)
+      object WebSidebar: TWebBrowser
         Left = 8
-        Top = 104
-        Width = 165
-        Height = 16
-        Anchors = [akLeft, akTop, akRight]
-        AutoSize = False
-        Caption = '...'
-      end
-      object txtSearchText: TEdit
-        Left = 8
-        Top = 8
-        Width = 165
-        Height = 24
-        Anchors = [akLeft, akTop, akRight]
+        Top = 184
+        Width = 41
+        Height = 41
         TabOrder = 0
-        OnEnter = txtSearchTextEnter
-        OnExit = txtSearchTextExit
+        OnStatusTextChange = WebMainStatusTextChange
+        OnBeforeNavigate2 = WebSidebarBeforeNavigate2
+        OnNewWindow2 = WebSidebarNewWindow2
+        ControlData = {
+          4C0000003D0400003D0400000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
       end
-      object cbRegEx: TCheckBox
-        Left = 8
-        Top = 36
-        Width = 165
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = '&Regular Expression'
-        TabOrder = 1
-      end
-      object cbCaseSensitive: TCheckBox
-        Left = 8
-        Top = 54
-        Width = 165
-        Height = 17
-        Anchors = [akLeft, akTop, akRight]
-        Caption = '&Case sensitive'
+      object panSearch: TPanel
+        Left = 1
+        Top = 1
+        Width = 178
+        Height = 127
+        Align = alTop
+        BevelOuter = bvNone
         TabOrder = 2
+        Visible = False
+        DesignSize = (
+          178
+          127)
+        object lblMatchCount: TLabel
+          Left = 8
+          Top = 104
+          Width = 165
+          Height = 16
+          Anchors = [akLeft, akTop, akRight]
+          AutoSize = False
+          Caption = '...'
+        end
+        object txtSearchText: TEdit
+          Left = 8
+          Top = 8
+          Width = 165
+          Height = 24
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 0
+          OnEnter = txtSearchTextEnter
+          OnExit = txtSearchTextExit
+        end
+        object cbRegEx: TCheckBox
+          Left = 8
+          Top = 36
+          Width = 165
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = '&Regular Expression'
+          TabOrder = 1
+        end
+        object cbCaseSensitive: TCheckBox
+          Left = 8
+          Top = 54
+          Width = 165
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = '&Case sensitive'
+          TabOrder = 2
+        end
+        object btnSearch: TButton
+          Left = 8
+          Top = 76
+          Width = 165
+          Height = 25
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Search'
+          TabOrder = 3
+          OnClick = btnSearchClick
+        end
       end
-      object btnSearch: TButton
+      object tvSideList: TTreeView
         Left = 8
-        Top = 76
-        Width = 165
-        Height = 25
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Search'
-        TabOrder = 3
-        OnClick = btnSearchClick
+        Top = 232
+        Width = 41
+        Height = 45
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        BorderStyle = bsNone
+        HideSelection = False
+        Indent = 19
+        PopupMenu = pmLink
+        ReadOnly = True
+        RightClickSelect = True
+        TabOrder = 1
+        Visible = False
+        OnChange = tvSideListChange
+        OnContextPopup = tvSideListContextPopup
+        OnExpanding = tvSideListExpanding
       end
-    end
-    object tvSideList: TTreeView
-      Left = 8
-      Top = 232
-      Width = 41
-      Height = 41
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      BorderStyle = bsNone
-      HideSelection = False
-      Indent = 19
-      PopupMenu = pmLink
-      ReadOnly = True
-      RightClickSelect = True
-      TabOrder = 3
-      Visible = False
-      OnChange = tvSideListChange
-      OnContextPopup = tvSideListContextPopup
-      OnExpanding = tvSideListExpanding
     end
   end
   object panMain: TPanel
@@ -376,12 +381,6 @@ object frmWikiLocalMain: TfrmWikiLocalMain
         BorderWidth = 2
         Caption = 'panPageInfo'
         Color = clInfoBk
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clInfoText
-        Font.Height = -13
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
         PopupMenu = pmRedirect
         TabOrder = 1
         Visible = False

@@ -89,6 +89,7 @@ type
     Backlinks3: TMenuItem;
     miLinkBack: TMenuItem;
     panSearch: TPanel;
+    panSideView: TPanel;
     txtSearchText: TEdit;
     cbRegEx: TCheckBox;
     cbCaseSensitive: TCheckBox;
@@ -258,6 +259,7 @@ type
 var
   sl:TStringList;
   s:string;
+  i:integer;
 begin
   LPath:=ExtractFilePath(Application.ExeName);
   FGroupDelim:='.';
@@ -283,6 +285,17 @@ begin
       if panEdit.Height=0 then panEdit.Height:=1;
       panEdit.Top:=0;
       StatusBar1.Top:=ClientHeight;
+
+      s:=sl.Values['Font1'];
+      if s<>'' then Font.Name:=s;
+      if TryStrToInt(sl.Values['FontSize'],i) then Font.Size:=i;
+      s:=sl.Values['Font2'];
+      if s<>'' then
+       begin
+        panGroupName.Font.Name:=s;
+        panPageName.Font.Name:=s;
+       end;
+
     except
       //silent!
     end;
@@ -362,6 +375,9 @@ begin
 
     sl:=TStringList.Create;
     try
+      if FileExists(LPath+'WikiLocal.ini') then
+        sl.LoadFromFile(LPath+'WikiLocal.ini');
+        
       sl.Values['Left']:=IntToStr(Left);
       sl.Values['Top']:=IntToStr(Top);
       sl.Values['Right']:=IntToStr(Left+Width);
