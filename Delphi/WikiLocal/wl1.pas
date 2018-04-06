@@ -260,6 +260,8 @@ var
   sl:TStringList;
   s:string;
   i:integer;
+  f:TFileStream;
+  wp:TWindowPlacement;
 begin
   LPath:=ExtractFilePath(Application.ExeName);
   FGroupDelim:='.';
@@ -270,13 +272,6 @@ begin
     sl:=TStringList.Create;
     try
       sl.LoadFromFile(LPath+'WikiLocal.ini');
-
-      if sl.Values['Maximized']='1' then WindowState:=wsMaximized else
-        BoundsRect:=Rect(
-          StrToInt(sl.Values['Left']),
-          StrToInt(sl.Values['Top']),
-          StrToInt(sl.Values['Right']),
-          StrToInt(sl.Values['Bottom']));
 
       panSideBar.Width:=StrToInt(sl.Values['SideBar']);
       if panSideBar.Width=0 then panSideBar.Width:=1;
@@ -295,11 +290,29 @@ begin
         panGroupName.Font.Name:=s;
         panPageName.Font.Name:=s;
        end;
+      s:=sl.Values['Font3'];
+      if s<>'' then
+        txtEdit.Font.Name:=s;
 
     except
       //silent!
     end;
     sl.Free;
+   end;
+  if FileExists(LPath+'WikiLocal.dsk') then
+   begin
+    try
+      f:=TFileStream.Create(LPath+'WikiLocal.dsk',fmOpenRead or fmShareDenyWrite);
+      try
+        ZeroMemory(@wp,SizeOf(TWindowPlacement));
+        f.Read(wp,SizeOf(TWindowPlacement));
+        SetWindowPlacement(Handle,@wp);
+      finally
+        f.Free;
+      end;
+    except
+      //silent!
+    end;
    end;
 
   try
@@ -363,6 +376,8 @@ procedure TfrmWikiLocalMain.FormClose(Sender: TObject;
   var Action: TCloseAction);
 var
   sl:TStringList;
+  wp:TWindowPlacement;
+  f:TFileStream;
 begin
   if not(CheckEditing) then Action:=caNone;
 
@@ -377,13 +392,6 @@ begin
     try
       if FileExists(LPath+'WikiLocal.ini') then
         sl.LoadFromFile(LPath+'WikiLocal.ini');
-        
-      sl.Values['Left']:=IntToStr(Left);
-      sl.Values['Top']:=IntToStr(Top);
-      sl.Values['Right']:=IntToStr(Left+Width);
-      sl.Values['Bottom']:=IntToStr(Top+Height);
-
-      if WindowState=wsMaximized then sl.Values['Maximized']:='1';
 
       sl.Values['SideBar']:=IntToStr(panSideBar.Width);
       sl.Values['EditBar']:=IntToStr(panEdit.Height);
@@ -392,6 +400,17 @@ begin
     finally
       sl.Free;
     end;
+
+    if GetWindowPlacement(Handle,@wp) then
+     begin
+       f:=TFileStream.Create(LPath+'WikiLocal.dsk',fmCreate);
+       try
+         f.Write(wp,SizeOf(TWindowPlacement));
+       finally
+         f.Free;
+       end;
+     end;
+
    end;
 end;
 
