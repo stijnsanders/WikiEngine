@@ -4,9 +4,9 @@
 
     wikiparse_markdown.xml
     WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
-    version 1.0.2.59
+    version 1.0.3.62
     by Stijn Sanders <stijn@yoy.be>
-    2014-09
+    2014-2018
 
     When adapting for own use, change relative URL prefixes in "LocalURLs" below
 
@@ -42,14 +42,12 @@
 		<match>
 			<wiki>
 				<found>
-					<htmlencode />
 					<replace>
 						<pattern>^(.+)$</pattern>
 						<with>&lt;a href="$1" class="wikilink"&gt;$1&lt;/a&gt;</with>
 					</replace>
 				</found>
 				<missing>
-					<htmlencode />
 					<replace>
 						<pattern>^(.+)$</pattern>
 						<with>&lt;a href="$1" class="wikiedit"&gt;$1&lt;span&gt;?&lt;/span&gt;&lt;/a&gt;</with>
@@ -183,7 +181,6 @@
 			<pattern>`` ?(.+) ?``</pattern>
 			<match>
 				<submatch><number>1</number></submatch>
-				<htmlencode />
 				<prepend>&lt;code&gt;</prepend>
 				<append>&lt;/code&gt;</append>
 			</match>
@@ -192,7 +189,6 @@
 			<pattern>`([^`]+?)`</pattern>
 			<match>
 				<submatch><number>1</number></submatch>
-				<htmlencode />
 				<prepend>&lt;code&gt;</prepend>
 				<append>&lt;/code&gt;</append>
 			</match>
@@ -200,10 +196,9 @@
 		
 		Quick links
 		<split>
-			<pattern>&lt;(https?:[^&gt;]+?)&gt;</pattern>
+			<pattern>&amp;lt;(https?:.+?)&amp;gt;</pattern>
 			<match>
 				<submatch><number>1</number></submatch>
-				<htmlencode />
 				<replace>
 					<pattern>^(.+)$</pattern>
 					<with>&lt;a href="$1"&gt;$1&lt;/a&gt;</with>
@@ -211,10 +206,9 @@
 			</match>
 		</split>
 		<split>
-			<pattern>&lt;([^@]+?@.+?\.[a-z]{2,})&gt;</pattern>
+			<pattern>&amp;lt;([^@]+?@.+?\.[a-z]{2,})&amp;gt;</pattern>
 			<match>
 				<submatch><number>1</number></submatch>
-				<htmlencode />
 				'randomization': render into HTML coded entities
 				<replace><ignorecase>0</ignorecase><pattern>x</pattern><with>&amp;#x78;</with></replace> (x first: used in below codes)
 				<replace><ignorecase>0</ignorecase><pattern>a</pattern><with>&amp;#x61;</with></replace>
@@ -368,7 +362,6 @@
 				<pattern>^(    |\t)</pattern>
 				<with></with>
 			</replace>
-			<htmlencode />
 			<prepend>&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;</prepend>
 			<append>&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;</append>
 		</match>
