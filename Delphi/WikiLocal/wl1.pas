@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, SHDocVw, ExtCtrls, ComCtrls, AppEvnts,
-  WikiEngine_TLB, Menus, ActnList;
+  WikiEngine_TLB, Menus, ActnList, System.Actions;
 
 type
   TWikiLocalCheckHandler=function(var Name:string):boolean of object;
@@ -108,10 +108,10 @@ type
     procedure WebMainNewWindow2(Sender: TObject; var ppDisp: IDispatch;
       var Cancel: WordBool);
     procedure WebSidebarBeforeNavigate2(Sender: TObject;
-      const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
     procedure WebMainBeforeNavigate2(Sender: TObject;
-      const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+      const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
       Headers: OleVariant; var Cancel: WordBool);
     procedure WebMainStatusTextChange(Sender: TObject;
       const Text: WideString);
@@ -428,7 +428,7 @@ begin
 end;
 
 procedure TfrmWikiLocalMain.WebSidebarBeforeNavigate2(Sender: TObject;
-  const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
   s,t:string;
@@ -463,7 +463,7 @@ begin
 end;
 
 procedure TfrmWikiLocalMain.WebMainBeforeNavigate2(Sender: TObject;
-  const pDisp: IDispatch; var URL, Flags, TargetFrameName, PostData,
+  const pDisp: IDispatch; const URL, Flags, TargetFrameName, PostData,
   Headers: OleVariant; var Cancel: WordBool);
 var
   s,t:string;
@@ -722,6 +722,7 @@ var
   f:TFileStream;
   fi:TByHandleFileInformation;
   st:TSystemTime;
+  s:AnsiString;
   l:Int64;
 begin
   fn:=LData+FileNameSafe(AWikiGroup,AWikiPage,ExtWikiData);
@@ -732,8 +733,9 @@ begin
     f:=TFileStream.Create(fn,fmOpenRead);
     try
       l:=f.Size;
-      SetLength(PageData,l);
-      f.Read(PageData[1],l);
+      SetLength(s,l);
+      f.Read(s[1],l);
+      PageData:=string(s);
       GetFileInformationByHandle(f.Handle,fi);
       if FileTimeToSystemTime(fi.ftLastWriteTime,st) then
         PageAge:=SystemTimeToDateTime(st) else PageAge:=0.0;
@@ -799,7 +801,8 @@ procedure TfrmWikiLocalMain.SetWikiData(const AWikiGroup,AWikiPage,
   APageData:string;ADoLinksNow:boolean);
 var
   f:TFileStream;
-  fn,s:string;
+  fn:string;
+  s:AnsiString;
   l:Int64;
 begin
   fn:=LData+FileNameSafe(AWikiGroup,AWikiPage,ExtWikiData);
@@ -815,11 +818,11 @@ begin
     finally
       f.Free;
     end;
-    if s<>WikiData then
+    if string(s)<>WikiData then
       raise Exception.Create('WikiPage edited externally, please refresh page and repeat changes.');
    end;
 
-  s:=APageData;
+  s:=AnsiString(APageData);
   if (s='') or (s='delete') then
    begin
     //verif?
@@ -947,7 +950,8 @@ var
 begin
   Result:=AWikiGroup+'.'+AWikiPage+'.'+Ext;
   for i:=1 to Length(Result) do
-    if Result[i] in ['\','/',':','*','?','"','<','>','|'] then Result[i]:='_';
+    if AnsiChar(Result[i]) in ['\','/',':','*','?','"','<','>','|'] then
+      Result[i]:='_';
 end;
 
 function TfrmWikiLocalMain.CheckWiki(var Name: string): boolean;
@@ -1115,7 +1119,8 @@ procedure TfrmWikiLocalMain.importPMWiki1Click(Sender: TObject);
 var
   body:IHTMLElement;
   f:TFileStream;
-  fn,s,d:string;
+  fn,d:string;
+  s:AnsiString;
   fd:TWin32FindData;
   fh:THandle;
   sl:TStringList;
@@ -1129,7 +1134,7 @@ begin
     if fh<>0 then
      begin
       repeat
-        if not(fd.cFileName[0] in ['.','_']) then
+        if not(AnsiChar(fd.cFileName[0]) in ['.','_']) then
          begin
           WikiPage:=fd.cFileName;
           sl.LoadFromFile(d+fd.cFileName);
@@ -1137,9 +1142,10 @@ begin
           if WikiData<>'' then
            begin
             fn:=LData+FileNameSafe(FWikiGroup,WikiPage,ExtWikiData);
+            s:=AnsiString(WikiData);
             f:=TFileStream.Create(fn,fmCreate);
             try
-              f.Write(WikiData[1],Length(WikiData));
+              f.Write(s[1],Length(s));
             finally
               f.Free;
             end;
@@ -1152,7 +1158,7 @@ begin
               //silent
               on e:Exception do
                begin
-                s:='{'+e.ClassName+'}'+e.Message;
+                s:=AnsiString('{'+e.ClassName+'}'+e.Message);
                 f:=TFileStream.Create(LData+FileNameSafe(FWikiGroup,WikiPage,'log'),fmCreate);
                 try
                   f.Write(s[1],Length(s));
@@ -1332,6 +1338,7 @@ var
   fn,g,w:string;
   fd:TWin32FindData;
   fh:THandle;
+  s:AnsiString;
   i,c:integer;
   x,y:WideString;
 begin
@@ -1365,8 +1372,9 @@ begin
           f:=TFileStream.Create(LData+fn,fmOpenRead);
           try
             l:=f.Size;
-            SetLength(WikiData,l);
-            f.Read(WikiData[1],l);
+            SetLength(s,l);
+            f.Read(s[1],l);
+            WikiData:=string(s);
           finally
             f.Free;
           end;
@@ -1518,7 +1526,7 @@ begin
   j:=1;
   for i:=1 to Length(x) do
    begin
-    if x[i] in ['*','$','|','\','(',')','[',']','^','+','.','?'] then
+    if AnsiChar(x[i]) in ['*','$','|','\','(',')','[',']','^','+','.','?'] then
      begin
       Result[j]:='\';
       inc(j);
@@ -1533,7 +1541,8 @@ procedure TfrmWikiLocalMain.btnSearchClick(Sender: TObject);
 var
   re:IRegExp2;
   f:TFileStream;
-  s:string;
+  s:AnsiString;
+  t:string;
   fd:TWin32FindData;
   fh:THandle;
   i,c:integer;
@@ -1560,7 +1569,7 @@ begin
     if fh<>0 then
      begin
       repeat
-        if not(fd.cFileName[0] in ['.','_']) then
+        if not(AnsiChar(fd.cFileName[0]) in ['.','_']) then
          begin
           f:=TFileStream.Create(LData+fd.cFileName,fmOpenRead);
           try
@@ -1569,12 +1578,12 @@ begin
           finally
             f.Free;
           end;
-          if re.Test(s) then
+          if re.Test(WideString(s)) then
            begin
-            s:=fd.cFileName;
-            i:=Length(s);
-            while (i<>0) and (s[i]<>'.') do dec(i);
-            sl.Add(Copy(s,1,i-1));
+            t:=fd.cFileName;
+            i:=Length(t);
+            while (i<>0) and (t[i]<>'.') do dec(i);
+            sl.Add(Copy(t,1,i-1));
             inc(c);
            end;
          end;

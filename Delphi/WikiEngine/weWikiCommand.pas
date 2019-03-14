@@ -130,7 +130,7 @@ var
   function GetRemainder:WideString;
   begin
     while (npos<=Length(Data)) and
-      (Data[npos] in [WideChar(' '),WideChar(#9)]) do inc(npos);
+      (AnsiChar(Data[npos]) in [' ',#9]) do inc(npos);
     Result:=Copy(Data,npos,Length(Data)-npos+1);
   end;
   function AllAsAttr:WideString;

@@ -1,9 +1,9 @@
 object frmWikiLocalMain: TfrmWikiLocalMain
   Left = 316
   Top = 139
-  Width = 601
-  Height = 480
   Caption = 'WikiLocal'
+  ClientHeight = 441
+  ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,9 +20,9 @@ object frmWikiLocalMain: TfrmWikiLocalMain
     Left = 180
     Top = 25
     Width = 4
-    Height = 398
-    Cursor = crHSplit
+    Height = 397
     OnMoved = Splitter1Moved
+    ExplicitHeight = 398
   end
   object panPage: TPanel
     Left = 0
@@ -65,7 +65,6 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       AutoDropDown = True
       Anchors = [akLeft, akTop, akRight]
       DropDownCount = 32
-      ItemHeight = 16
       TabOrder = 0
       OnClick = cbPageClick
       OnDblClick = cbPageDblClick
@@ -92,7 +91,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 423
+    Top = 422
     Width = 585
     Height = 19
     Panels = <
@@ -108,19 +107,18 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       item
         Width = 50
       end>
-    SimplePanel = False
   end
   object panSidebar: TPanel
     Left = 0
     Top = 25
     Width = 180
-    Height = 398
+    Height = 397
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 2
     DesignSize = (
       180
-      398)
+      397)
     object panGroupName: TPanel
       Left = 0
       Top = 0
@@ -159,13 +157,13 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Left = 0
       Top = 41
       Width = 180
-      Height = 357
+      Height = 356
       Align = alClient
       BevelOuter = bvLowered
       TabOrder = 2
       DesignSize = (
         180
-        357)
+        356)
       object WebSidebar: TWebBrowser
         Left = 8
         Top = 184
@@ -266,7 +264,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
     Left = 184
     Top = 25
     Width = 401
-    Height = 398
+    Height = 397
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
@@ -295,7 +293,6 @@ object frmWikiLocalMain: TfrmWikiLocalMain
         Height = 150
         Align = alRight
         BorderStyle = bsNone
-        ItemHeight = 16
         TabOrder = 0
         Visible = False
       end
@@ -350,7 +347,7 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Left = 0
       Top = 222
       Width = 401
-      Height = 176
+      Height = 175
       Align = alClient
       BevelOuter = bvLowered
       TabOrder = 1
@@ -358,14 +355,15 @@ object frmWikiLocalMain: TfrmWikiLocalMain
         Left = 1
         Top = 20
         Width = 399
-        Height = 155
+        Height = 154
         Align = alClient
         TabOrder = 0
         OnStatusTextChange = WebMainStatusTextChange
         OnBeforeNavigate2 = WebMainBeforeNavigate2
         OnNewWindow2 = WebMainNewWindow2
+        ExplicitHeight = 155
         ControlData = {
-          4C0000003D290000051000000000000000000000000000000000000000000000
+          4C0000003D290000EB0F00000000000000000000000000000000000000000000
           000000004C000000000000000000000001000000E0D057007335CF11AE690800
           2B2E126208000000000000004C0000000114020000000000C000000000000046
           8000000000000000000000000000000000000000000000000000000000000000

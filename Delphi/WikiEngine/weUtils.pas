@@ -81,7 +81,7 @@ begin
   Result:='';
   for i:=1 to Length(s) do
     if s[i] in ['0'..'9','A'..'Z','a'..'z','?','&','=','#',':','/',';','-','_','.','!','~','*','''','(',')'] then
-      Result:=Result+s[i]
+      Result:=Result+WideChar(s[i])
     else
       Result:=Result+WideChar('%')+hex[byte(s[i]) shr 4]+hex[byte(s[i]) and $F];
 end;
