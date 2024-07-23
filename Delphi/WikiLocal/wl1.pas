@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, OleCtrls, SHDocVw, ExtCtrls, ComCtrls, AppEvnts,
-  WikiEngine_TLB, Menus, ActnList, System.Actions;
+  WikiEngine_TLB, Menus, ActnList;
 
 type
   TWikiLocalCheckHandler=function(var Name:string):boolean of object;
@@ -99,6 +99,7 @@ type
     btnCloseSideList: TButton;
     actCloseSideList: TAction;
     Search2: TMenuItem;
+    CopyLink1: TMenuItem;
     procedure cbPageKeyPress(Sender: TObject; var Key: Char);
     procedure FormShow(Sender: TObject);
     procedure ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
@@ -159,6 +160,7 @@ type
       var AllowExpansion: Boolean);
     procedure tvSideListContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure CopyLink1Click(Sender: TObject);
   private
     FIsEditing, FPageModified: boolean;
     FWikiPage, FWikiGroup, FGroupDelim, FPagePath, FContextLink: string;
@@ -207,7 +209,7 @@ const
 
 implementation
 
-uses MSHTML, ComObj, ActiveX, VBScript_RegExp_55_TLB;
+uses MSHTML, ComObj, ActiveX, VBScript_RegExp_55_TLB, Clipbrd;
 
 {$R *.dfm}
 
@@ -255,13 +257,18 @@ end;
 
 procedure TfrmWikiLocalMain.FormShow(Sender: TObject);
 type
-  TRegCall=function: HResult; stdcall;
+  //TRegCall=function: HResult; stdcall;
+  T_DGCO=function(const CLSID, IID: TGUID; var Obj): HResult; stdcall;//DllGetClassObject
 var
   sl:TStringList;
   s:string;
   i:integer;
   f:TFileStream;
   wp:TWindowPlacement;
+
+  p:T_DGCO;
+  cf:IClassFactory;
+
 begin
   LPath:=ExtractFilePath(Application.ExeName);
   FGroupDelim:='.';
@@ -315,6 +322,7 @@ begin
     end;
    end;
 
+  {
   try
     TRegCall(GetProcAddress(LoadLibrary(PChar(LPath+'WikiEngine.dll')),
       'DllRegisterServer'));
@@ -322,11 +330,17 @@ begin
     //ignore registry access warnings on Windows 6
     on e:EOleSysError do if e.ErrorCode<>TYPE_E_REGISTRYACCESS then raise;
   end;
+  }
+  p:=GetProcAddress(LoadLibrary(PChar(LPath+'WikiEngine.dll')),'DllGetClassObject');
+  if (@p=nil) or (p(CLASS_Engine,IClassFactory,cf)<>S_OK) then
+    RaiseLastOSError;
 
   LData:=LPath+'WikiLocal'+PathDelim;
   ForceDirectories(LData);
 
-  Engine:=CoEngine.Create;
+  //Engine:=CoEngine.Create;
+  if cf.CreateInstance(nil,IEngine,Engine)<>S_OK then RaiseLastOSError;
+
   Engine.Groups:=true;//?
   Engine.WikiParseXML:='file://'+LPath+'WikiLocal.xml';
   StatusBar1.Panels[0].Text:=IntToStr(Engine.WikiParseXMLLoadTime)+'ms';
@@ -1611,7 +1625,7 @@ procedure TfrmWikiLocalMain.btnCloseSideListClick(Sender: TObject);
 begin
   panSearch.Visible:=false;
   tvSideList.Visible:=false;
-  WebSidebar.Visible:=false;
+  WebSidebar.Visible:=true;
   btnCloseSideList.Visible:=false;
   panGroupName.Caption:=FWikiGroup;
   panGroupName.Hint:=FWikiGroup;
@@ -1715,6 +1729,11 @@ begin
     FContextLink:=''
   else
     FContextLink:='wikilocal:///view/'+tvSideList.Selected.Text;
+end;
+
+procedure TfrmWikiLocalMain.CopyLink1Click(Sender: TObject);
+begin
+  Clipboard.AsText:=FContextLink;
 end;
 
 end.

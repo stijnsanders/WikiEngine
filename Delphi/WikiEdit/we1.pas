@@ -103,10 +103,13 @@ end;
 
 procedure TForm1.FormShow(Sender: TObject);
 type
-  TRegCall=function: HResult; stdcall;
+  //TRegCall=function: HResult; stdcall;
+  T_DGCO=function(const CLSID, IID: TGUID; var Obj): HResult; stdcall;//DllGetClassObject
 var
   sl:TStringList;
   i:integer;
+  p:T_DGCO;
+  cf:IClassFactory;
 begin
   LPath:=Application.ExeName;
   i:=Length(LPath);
@@ -136,14 +139,19 @@ begin
     sl.Free;
    end;
 
+  {
   try
     TRegCall(GetProcAddress(LoadLibrary(PChar(LPath+'WikiEngine.dll')),
       'DllRegisterServer'));
   except
     on e:EOleSysError do if e.ErrorCode<>TYPE_E_REGISTRYACCESS then raise;
   end;
-
-  Engine:=CoEngine.Create;
+  }
+  p:=GetProcAddress(LoadLibrary(PChar(LPath+'WikiEngine.dll')),'DllGetClassObject');
+  if (@p=nil) or (p(CLASS_Engine,IClassFactory,cf)<>S_OK) then
+    RaiseLastOSError;
+  //Engine:=CoEngine.Create;
+  if cf.CreateInstance(nil,IEngine,Engine)<>S_OK then RaiseLastOSError;
   if ParamCount=0 then
    begin
     if ParseDialog1.Execute then

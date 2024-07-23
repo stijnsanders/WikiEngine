@@ -463,7 +463,7 @@
 	<group  id="ParseLink">
 
 		Replace arrow notation by pipe notation
-        <replace>
+		<replace>
 			<pattern>^([^\|]*?) *?-?&gt; *([\u0000-\uFFFF]*)$</pattern>
 			<with>$2|$1</with>
 		</replace>

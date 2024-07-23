@@ -584,6 +584,10 @@ object frmWikiLocalMain: TfrmWikiLocalMain
       Caption = 'Edit'
       OnClick = miLinkEditClick
     end
+    object CopyLink1: TMenuItem
+      Caption = 'Copy Link'
+      OnClick = CopyLink1Click
+    end
     object N5: TMenuItem
       Caption = '-'
     end
