@@ -1,0 +1,14 @@
+wikiparse 2
+
+//c2.com
+replace ^(wiki:)(.+)$
+	with http://c2.com/cgi/wiki?$2|@@hspan%$1@@h/span%$2
+//WikiPedia
+replace ^(wikipedia:)(.+)$
+	with http://en.wikipedia.org/wiki/$2|@@hspan%$1@@h/span%$2
+//MeatBall
+replace ^(usemod:)(.+)$
+	with http://www.usemod.com/cgi-bin/wiki.pl?$2|@@hspan%$1@@h/span%$2
+//UseMod
+replace ^(meatball:)(.+)$
+	with http://www.usemod.com/cgi-bin/mb.pl?$2|@@hspan%$1@@h/span%$2

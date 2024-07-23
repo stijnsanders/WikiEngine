@@ -1,0 +1,664 @@
+wikiparse 2
+/*
+	WikiParse XML to mimic PmWiki
+	version 2.0.0.65
+	by Stijn Sanders <stijn@yoy.be>
+	2024-01
+
+	When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+	Incoming text is first parsed to extract [= =] sections,
+	WikiLink's are extracted, and then other layout is transformed to HTML.
+*/
+jump Start
+
+//This label is called to replace parse-codes local URL, adapt to your site
+label LocalURLs
+	//Link to a page that exists
+	replace @@w%
+		with view/
+	//Link to a page that doesn't exist (edit page link)
+	replace @@e%
+		with edit/
+
+//Extract WikiLinks, feel free to change or add other alternatives in the main "(|)"
+//The "`?([A-Z][A-Za-z0-9_]+?[\./])?" prefix handles groups
+label FindWikiLinks
+	// This one takes anything with two or more capitals in it (or a capital somewhere followed by a digit somewhere)
+	//extract `?(([A-Z][A-Za-z0-9_]+?)[\./])?([a-z0-9]*?[A-Z][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)
+	// This one is a bit looser and takes up more names that usually show up in code
+	extract `?([A-Z][A-Za-z0-9_]+?[\./:])?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)
+		prefix %A%
+		match
+			//Ignore neutralized WikiWords
+			replaceif ^`
+				multiline
+				with
+				do
+					jump NonLinkText
+				else
+					jump ParseLink
+		inbetween
+			jump NonLinkText
+
+label Start
+	//CRLF/LF fix
+	replace \r\n
+		with \x0A
+	append \x0A
+	
+	//Treat tabs as spaces
+	replace \t
+		with \x20
+	
+	//Extract items marked for skipping layout, process inbetweens as one block
+	extract \[([=@])(.*?)\1\]
+		singleline
+		prefix %B%
+		match
+			submatch 2
+			htmlencode
+		inbetween
+			extract \(:(.*?):\)
+				singleline
+				prefix %C%
+				match
+					submatch 1
+					command
+				inbetween
+
+					//First pre-process text for post-processing styles
+					replace @@
+						with @@k%
+					
+					//Extract WikiLinks and HyperLinks from plain text:
+					//First find anything enclosed in double square brackets:
+					extract \[\[(.+?)\]\]
+						singleline
+						prefix %D%
+						match
+							submatch 1
+							
+							//If not pipe-notation, strip whitespace
+							check \|
+								else
+									replace ^(.+?)$
+										singleline
+										with $1|$1
+									split ^(.+?)\|
+										singleline
+										match
+											replace \s
+												with
+							
+							jump ParseLink
+
+						inbetween
+
+							//Text Formatting
+							replace @@k%(.*?)@@k%
+								singleline
+								with @@hcode%$1@@h/code%
+							replace ([^']|^)''''('')?([^']|$)
+								multiline
+								with $1@@hspan%@@h/span%$3
+							replace '''(.+?)'''
+								singleline
+								with @@hb%$1@@h/b%
+							replace ''(.+?)''
+								singleline
+								with @@hi%$1@@h/i%
+							split \[\++.*?\++\]
+								singleline
+								match
+									replace \[(\++)(.*?)\++\]
+										singleline
+										with $1$2$1
+									split ^\+*
+										multiline
+										match
+											replace \+
+												with @@hbig%
+									split \+*$
+										match
+											replace \+
+												with @@h/big%
+							split \[-+.*?-+\]
+								singleline
+								match
+									replace \[(-+)(.*?)-+\]
+										singleline
+										with $1$2$1
+									split ^-*
+										multiline
+										match
+											replace -
+												with @@hsmall%
+									split -*$
+										match
+											replace -
+												with @@h/small%
+							replace \[\[<<\]\]
+								with @@hbr /%
+							replace \{\+(.*?)\+\}
+								singleline
+								with @@hins%$1@@h/ins%
+							replace \{-(.*?)-\}
+								singleline
+								with @@hdel%$1@@h/del%
+
+							replace '\+([A-Z0-9].*?)\+'
+								with @@hbig%$1@@h/big%
+							replace '-([A-Z0-9].*?)-'
+								with @@hsmall%$1@@h/small%
+							replace '\^([A-Z0-9].*?)\^'
+								with @@hsup%$1@@h/sup%
+							replace '_([A-Z0-9].*?)_'
+								with @@hsub%$1@@h/sub%
+							replace '__([A-Z0-9].*?)__'
+								with @@hu%$1@@h/u%
+						
+							//Plain URL's
+							extract (www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn|xxm):)[-_\.'\*\+\(\)?&%=#:;,/A-Za-z0-9]+
+								prefix %E%
+								match
+									jump HyperLink
+								inbetween
+								
+									//Other prefixed things
+									extract ([A-Za-z][A-Za-z0-9_]*:)[-_\.'\*\+\(\)?&=#:;/A-Z0-9]+
+										prefix %F%
+										match
+											//Check SisterWiki prefixes
+											include sisterwikis.wrs
+											jump ParseLink
+										inbetween
+										
+											//Ignore codes within color tags
+											extract %[a-z0-9=#]{3,}?%
+												prefix %G%
+												inbetween
+													jump FindWikiLinks
+
+					//Lines ending with two backslashes (or more), change to BR's
+					split \\(\\+)\n
+						match
+							submatch 1
+							replace \\
+								with @@hbr /%
+					
+					//Lines ending with backslash, join with next
+					replace \\\n
+						with
+					
+					//Replace dashes with HR
+					replace ^ *?----+ *?$
+						multiline
+						with <hr />
+					
+					//Headers
+					replace ^!!!!(.*?)$
+						multiline
+						with </p>\x0A<h4>$1</h4>\x0A<p>
+					replace ^!!!(.*?)$
+						multiline
+						with </p>\x0A<h3>$1</h3>\x0A<p>
+					replace ^!!(.*?)$
+						multiline
+						with </p>\x0A<h2>$1</h2>\x0A<p>
+					replace ^!(.*?)$
+						multiline
+						with </p>\x0A<h1>$1</h1>\x0A<p>
+					
+					//Formatted text
+					split ^ .*?$(\n* .*?$\n?)*
+						multiline
+						match
+						
+							//Strip preceding spaces
+							replace ^ 
+								multiline
+								with
+							
+							//Fix EOL's for later since br's would change layout
+							replace \n
+								with @@n%
+						
+							prepend </p><pre>
+							append </pre><p>
+					
+					//Lists and Tables
+					jump DoIndent
+					jump DoLists
+					jump DoTables
+
+					//Double EOL's end paragraph and start new
+					replace \n( *?\n)+
+						with \x0A</p>\x0A<p>\x0A
+					
+					//Ignore EOL's after extract codes
+					split (%B%[0-9]+?#)\n
+						inbetween
+							//All other EOL's to plain BR's
+							replace ([^>])\n
+								with $1<br />\x0A
+					
+					//Local URL's
+					jump LocalURLs
+
+					//Post-processing to get additional layout correct
+					replace @@h(.+?)%
+						with <$1>
+					replace @@n%
+						with \x0A
+					replace @@k%
+						with @@
+
+					//Enclose all in a paragraph, remove empty ones
+					prepend <p>\x0A
+					append </p>\x0A
+					replace <p>\s*?</p>\s*
+						with
+					
+					//Fix extra p's in lists and tables
+					replace (<(/dt|/dd|/li|td|th|/table|ul|ol)[^>]*?>\n *?)</p>
+						with $1
+					replace <p>(\n *?<(/ul|/ol|/td|/th|li|dt|dd|table)>)
+						with $1
+
+					//Color codes
+					replace %bg=([a-z][a-z][a-z]+?|#[a-f0-9]{3}([a-f0-9]{3})?)%(.*?)(%%|$)
+						singleline
+						with <span style="background-color:$1">$3</span>
+					replace %((color|fg)=)?([a-z][a-z][a-z]+?|#[a-f0-9]{3}([a-f0-9]{3})?)%(.*?)(%%|$)
+						singleline
+						with <span style="color:$3">$5</span>
+					replace <([^/>]+?)>[\n ]*?%center%	
+						with <$1 style="text-align:center;">
+					replace <([^/>]+?)>[\n ]*?%right%	
+						with <$1 style="text-align:right;">
+					replace <([^/>]+?)>[\n ]*?%rfloat%
+						with <$1 style="float:right;">
+					replace <([^/>]+?)>[\n ]*?%lfloat%
+						with <$1 style="float:left;">
+					replace <([^/>]+?)>[\n ]*?%width=([0-9emnptx]+?)%
+						with <$1 style="width:$2;">
+
+
+	//CRLF/LF fix
+	replace \n
+		with \x0D\x0A
+
+
+//Does it start with a slash, or an internet protocol, then it's a HyperLink
+label ParseLink
+
+	//Replace arrow notation by pipe notation
+	replace ^([^\|]*?) *?-?> *(.*)$
+		singleline
+		with $2|$1
+	
+	//Check for a () portion inside [[]]
+	split ^.*?\(.*?\).*?(\||$)
+		match
+			//duplicate
+			replace ^(.+?)(\|.*)?$
+				with $1@@d%$1$2
+			//and process both
+			split ^.+@@d%
+				match
+					//remove () from prefix
+					replace [\(\)]
+						with
+				inbetween
+					//rip from suffix
+					replace \(.*?\)
+						with
+			//update to pipe
+			replace @@d%
+				with |
+
+	//Check External URL's
+	check ^([/#]|(http|https|file|ftp|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn|xxm):|[-a-z0-9\.]+?@[-a-z0-9\.]+?\.[a-z]{2,3}\b|[-a-z0-9\.]+?\.[-a-z0-9]+?\.[a-z]{2,3}/?\|)
+		do
+			replaceif ^#((.*) *\| *?(.*)|(.+))$
+				singleline
+				with <a name="$2$4">$3@@h/a%
+				else
+					jump HyperLink
+		else
+			//Else it's a WikiLink,
+			
+			//Fix non-displaying group prefix (slash)
+			replace ^([A-Za-z0-9_]+?)/(.+)$
+				with $1.$2|$2
+			
+			//Fix any unrecognized prefix
+			replaceif ^([^:]+?:.*)$
+				with @@hu%$1@@h/u%
+				else
+			
+					//Check if the WikiPage linked to exists or not and link appropriately
+					wiki ( *\|.*)$
+						with
+						update 1
+						updateprefix @@u%
+						updatedo
+							replaceif ^(.*?)@@u%.+?(\|)
+								with $1$2
+								else
+									replace @@u%
+										with |
+						found
+							jump WikiLinkFound
+						missing
+							jump WikiLinkMissing
+
+label HyperLink
+	//Check if it's an e-mail address
+	check ^[-a-z0-9\.]+?@[-a-z0-9\.]+?\.[a-z]{2,3}\b
+		do
+			prepend hyperlink##mailto:####
+		else
+			//Check if it starts with something like www.site.tld
+			check ^[-a-z0-9\.]+?\.[-a-z0-9]+?\.[a-z]{2,3}/?
+				do
+					prepend hyperlink##http://####
+				else
+					prepend hyperlink######
+	jump SomeLink
+
+//Use id="SomeLink" with prefix of form "class##prefix##suffix##"
+label WikiLinkFound
+	prepend wikilink##@@w%####
+	jump SomeLink
+
+label WikiLinkMissing
+	//Suffix with pre-codes because HTMLencode later
+	prepend wikiedit##@@e%##@@hspan%?@@h/span%##
+	jump SomeLink
+
+//Display some link, prefix text with: class##prefix##suffix##
+label SomeLink
+	//HTMLEncode up front!
+	htmlencode
+
+	//Ending tags /a are in code here to pick-up a plain EOL later
+	//Check if a caption or title is provided, first with both name and title
+	replaceif ^(.+?)##(.*?)##(.*?)##([^\|]*?) *?\| *?([^\|]*?) *?\| *(.*)$
+		singleline
+		with <a href="$2[[$4]]" title="$6" class="$1">$5$3@@h/a%
+		else
+			//With pipe "|"
+			replaceif ^(.+?)##(.*?)##(.*?)##([^\|]*?) *?\| *(.*)$
+				singleline
+				with <a href="$2[[$4]]" title="$4" class="$1">$5$3@@h/a%
+				else
+					//Else take target as display name
+					replace ^(.+?)##(.*?)##(.*?)##(.*)$
+						singleline
+						with <a href="$2[[$4]]" title="$4" class="$1">$4$3@@h/a%
+	
+	//URLEncode sections enclosed in [[]]
+	split \[\[(.+?)\]\]
+		singleline
+		match
+			submatch 1
+			;urlencode
+
+label NonLinkText
+	//Other layout, between links
+
+	//HTMLEncode up front
+	htmlencode
+
+label DoIndent
+	
+	split (^-+?&gt;.+?$\n?( *?\n)*)+
+		multiline
+		match
+		
+			/* not really needed
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				with
+			*/       
+			
+			//Start/end
+			prepend <div class="indent">\x0A
+			append </div>\x0A
+			
+			//Remove single level prefixes, and one off other levels
+			replace ^(-&gt;|-(-+&gt;))
+				multiline
+				with $2
+			
+			//Check deeper levels
+			check ^-+&gt;
+				multiline
+				do
+					jump DoIndent
+			
+label DoLists
+	split ^([\*#:].*?$\n?( *?\n)?)+
+		multiline
+		match
+		
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				with
+			
+			//Check list type, start/end
+			check ^#
+				do
+					//Ordered List
+					prepend </p><ol>\x0A
+					append </ol><p>\x0A
+				else
+					check ^:
+						do
+							//Definition list
+							prepend </p><dl>\x0A
+							append </dl><p>\x0A
+						else
+							//check, pattern ^\*
+							//Unordered list
+							prepend </p><ul>\x0A
+							append </ul><p>\x0A
+			
+			//Check nested levels
+			extract (^[\*#:][\*#:].*?$\n?)+
+				multiline
+				prefix %K%
+				//Extraction needs a suffix with EOL to preserve line breaks
+				suffix #\x0A
+				match
+				
+					//Remove prefixes
+					replace ^[\*#:]
+						multiline
+						with
+					
+					//Recurse
+					jump DoLists
+					
+					//Add indentation
+					replace ^(?!$)
+						multiline
+						with \x20\x20\x20\x20
+				inbetween
+					//Take an item per line
+					split \n
+						inbetween
+							//Enclose items of list
+							replaceif ^: *((<[^>]+>|.)+?) *?: *?(.*)$
+								multiline
+								//Definition items first
+								with   <dt>$1</dt><dd>$3</dd>
+								else
+									//Or any with only a term
+									replaceif ^: *((<[^>]+>|.)+)$
+										multiline
+										with   <dt>$1</dt>
+										else
+											//Any other list items
+											replace ^[\*#](.*?)$
+												multiline
+												with   <li>$1</li>
+
+			//Fix nested lists
+			replace </(dd|li)>\n\x20\x20\x20\x20</p><([dou]l)>(.+?</\2>)<p>
+				singleline
+				with \x0A\x20\x20\x20\x20<$2>$3</$1>
+
+label DoTables
+	split (^\|\|.+?$\n?( *?\n)?)+
+		multiline
+		match
+
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				with \x0A
+			
+			//Start/end
+			prepend </p><table class="basetable"><tbody>\x0A
+			//Rows and cells
+			split ^\|\|.*?$
+				multiline
+				match
+					//Remove overfluxious prefixes
+					replace ^(\|\|)+
+						multiline
+						with ||
+
+					//Create colspan codes
+					split \|\|(\|\|)+
+						match
+							replace \|\|
+								with x
+							length
+							prepend @@s
+							append %||
+
+					//Remove ending delimiter
+					replace \|\| *?$
+						with
+
+					//Plain cells
+					replace \|\|
+						with </td><td>
+
+					//Row tags, first cell will close an unexisting previous cell
+					prepend <tr valign="top">
+					append </td></tr>
+
+
+			//Fix first cells
+			replace <tr([^>]*?)></td>
+				with <tr$1>
+
+			//Fix empty cells and cell alignment,colspan codes
+			split <td[^>]*?>.+?</td>
+				match
+					replace <(td[^>]*?)>(.+?)@@s([0-9]+?)%</td>
+						with <$1 colspan="$3">$2</td>
+					replace <(td[^>]*?)> *?</td>
+						with <$1>&nbsp;</td>
+					replace <(td[^>]*?)>(!?) (.+?) </td>
+						with <$1 align="center">$2$3</td>
+					replace <(td[^>]*?)>(!?) (.+?)</td>
+						with <$1 align="right">$2$3</td>
+					replace <(td[^>]*?)>(.+?) </td>
+						with <$1 align="left">$2</td>
+
+			//Fix header cells
+			replace <td([^>]*?)>!(.*?)</td>
+				with <th$1>$2</th>
+			
+			append </tbody></table><p>\x0A
+					
+
+/*
+label DoTables_WithSpanNumbers
+	split (^\|-?[0-9]*?\|.+?$\n?( *?\n)?)+
+		multiline
+		match
+
+			//Clear any empty lines
+			replace ^ *?\n
+				\x0A
+			
+			//Check nested tables
+			extract (^(\|-?[0-9]*?\|){2,}.+?$\n?)+
+				multiline
+				prefix %L%
+				//Extraction needs a suffix with EOL to preserve line breaks
+				suffix #\x0A
+				match
+					//Remove prefixes
+					replace ^\|-?[0-9]*?\|
+						multiline
+						with
+
+					//Recurse
+					jump DoTables
+
+					//Add indentation
+					replace ^<
+						multiline
+						with \x20\x20\x20\x20<
+					
+					//Enclose in a cell (alignment?)
+					prepend <tr valign="top"><td>\x0A
+					append </td></tr>\x0A
+
+				inbetween
+					//Start/end
+					prepend </p><table class="basetable"><tbody>\x0A
+					//Rows and cells
+					split ^\|-?[0-9]*?\|.*?$
+						multiline
+						match
+                            //Remove ending delimiter
+							replace \|-?[0-9]*?\| *?$
+								with
+							//Row tags, first cell will close an unexisting previous cell
+							prepend <tr valign="top">
+							append </td></tr>
+							//Cells with rowspan
+							replace (^|[^\|])\|-([0-9]+?)\|
+								multiline
+								with $1</td><td rowspan="$2">
+							//Cells with colspan
+							replace (^|[^\|])\|([0-9]+?)\|
+								multiline
+								with $1</td><td colspan="$2">
+							//Plain cells
+							replace \|\|
+								with </td><td>
+
+					//Fix first cells
+					replace <tr([^>]*?)></td>
+						with <tr$1>
+					
+					//Fix empty cells and cell alignment
+					split <td[^>]*?>.+?</td>
+						match
+							replace <(td[^>]*?)> *?</td>
+								with <$1>&nbsp;</td>
+							replace <(td[^>]*?)> (.+?) </td>
+								with <$1 align="center">$2</td>
+							replace <(td[^>]*?)> (.+?)</td>
+								with <$1 align="right">$2</td>
+							replace <(td[^>]*?)>(.+?) </td>
+								with <$1 align="left">$2</td>
+
+					//Fix header cells
+					replace <td([^>]*?)>!(.*?)</td>
+						with <th$1>$2</th>
+					
+					append </tbody></table><p>\x0A
+*/
