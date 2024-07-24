@@ -478,7 +478,7 @@ label DoLists
 				
 					//Remove prefixes
 					replace ^[\*#:]
-						multiline
+						count 1
 						with
 					
 					//Recurse

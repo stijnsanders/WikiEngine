@@ -148,6 +148,7 @@ type
   TpeReplace=class(TParseEntryRegEx)
   private
     ReplaceWith:string;
+    ReplaceCount:integer;
   public
     procedure AfterConstruction; override;
     function ParseLine(const Info:TParseLineData):TParseEntry; override;
@@ -932,8 +933,8 @@ function TpeExtract.ParseLine(const Info:TParseLineData):TParseEntry;
 begin
   Result:=nil;//default
   if Info.Command='required' then Required:=true else
-  if Info.Command='prefix' then Prefix:=Info.Parameter else
-  if Info.Command='suffix' then Suffix:=Info.Parameter else
+  if Info.Command='prefix' then Prefix:=sEscaped(Info.Parameter) else
+  if Info.Command='suffix' then Suffix:=sEscaped(Info.Parameter) else
   if Info.Command='match' then Result:=Match else
   if Info.Command='inbetween' then Result:=Inbetween else
   Result:=inherited;
@@ -1057,18 +1058,28 @@ begin
   inherited;
   //default
   ReplaceWith:='';
+  ReplaceCount:=0;
 end;
 
 function TpeReplace.ParseLine(const Info:TParseLineData):TParseEntry;
 begin
   Result:=nil;
   if Info.Command='with' then ReplaceWith:=sEscaped(Info.Parameter) else
+  if Info.Command='count' then
+   begin
+    if not(TryStrToInt(Info.Parameter,ReplaceCount)) then
+      raise Exception.Create('ReplaceCount not numeric');
+   end
+  else
   Result:=inherited;
 end;
 
 function TpeReplace.Perform(Engine:TWikiEngine;const Data:string):string;
 begin
-  Result:=re.Replace(Data,ReplaceWith);
+  if ReplaceCount=0 then
+    Result:=re.Replace(Data,ReplaceWith)
+  else
+    Result:=re.Replace(Data,ReplaceWith,ReplaceCount);
 end;
 
 { TpeReplaceIf }
