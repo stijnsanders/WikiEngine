@@ -19,8 +19,6 @@ object frmWikiLocal: TfrmWikiLocal
     Width = 8
     Height = 402
     OnMoved = splSideBarMoved
-    ExplicitTop = 178
-    ExplicitHeight = 276
   end
   object panNavigation: TPanel
     Left = 0
@@ -30,7 +28,6 @@ object frmWikiLocal: TfrmWikiLocal
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 616
     DesignSize = (
       620
       33)
@@ -61,7 +58,6 @@ object frmWikiLocal: TfrmWikiLocal
       OnClick = cbPageNameClick
       OnDblClick = cbPageNameDblClick
       OnKeyPress = cbPageNameKeyPress
-      ExplicitWidth = 384
     end
     object btnGo: TButton
       Left = 464
@@ -72,7 +68,6 @@ object frmWikiLocal: TfrmWikiLocal
       Caption = 'Go'
       TabOrder = 3
       OnClick = btnGoClick
-      ExplicitLeft = 460
     end
     object btnEdit: TButton
       Left = 545
@@ -82,7 +77,6 @@ object frmWikiLocal: TfrmWikiLocal
       Action = actEdit
       Anchors = [akTop, akRight]
       TabOrder = 4
-      ExplicitLeft = 541
     end
   end
   object panSideBar: TPanel
@@ -93,7 +87,6 @@ object frmWikiLocal: TfrmWikiLocal
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitHeight = 401
     DesignSize = (
       185
       402)
@@ -173,7 +166,6 @@ object frmWikiLocal: TfrmWikiLocal
       OnChange = tvSideListChange
       OnContextPopup = tvSideListContextPopup
       OnExpanding = tvSideListExpanding
-      ExplicitHeight = 40
     end
     object hvSideBar: THtmlViewer
       Left = 8
@@ -196,6 +188,7 @@ object frmWikiLocal: TfrmWikiLocal
       OnRightClick = hvRightClick
       TabOrder = 2
       TabStop = True
+      OnKeyDown = hvKeyDown
       OnMouseUp = hvMouseUp
       Touch.InteractiveGestures = [igPan]
       Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia]
@@ -245,8 +238,6 @@ object frmWikiLocal: TfrmWikiLocal
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitWidth = 423
-    ExplicitHeight = 401
     object splEditPage: TSplitter
       Left = 0
       Top = 172
@@ -255,8 +246,6 @@ object frmWikiLocal: TfrmWikiLocal
       Cursor = crVSplit
       Align = alTop
       Visible = False
-      ExplicitLeft = -2
-      ExplicitTop = 174
     end
     object panEdit: TPanel
       Left = 0
@@ -267,7 +256,6 @@ object frmWikiLocal: TfrmWikiLocal
       BevelOuter = bvNone
       TabOrder = 0
       Visible = False
-      ExplicitWidth = 423
       object txtEdit: TMemo
         Left = 0
         Top = 0
@@ -277,7 +265,6 @@ object frmWikiLocal: TfrmWikiLocal
         ScrollBars = ssVertical
         TabOrder = 0
         WantTabs = True
-        ExplicitWidth = 219
       end
       object lbMods: TListBox
         Left = 223
@@ -288,7 +275,6 @@ object frmWikiLocal: TfrmWikiLocal
         ItemHeight = 21
         TabOrder = 1
         Visible = False
-        ExplicitLeft = 219
       end
       object panEditCmds: TPanel
         Left = 0
@@ -298,7 +284,6 @@ object frmWikiLocal: TfrmWikiLocal
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 2
-        ExplicitWidth = 423
         object btnSave: TButton
           Left = 6
           Top = 6
@@ -352,7 +337,6 @@ object frmWikiLocal: TfrmWikiLocal
       TabOrder = 1
       StyleElements = [seFont]
       OnDblClick = actEditExecute
-      ExplicitWidth = 423
     end
     object hvMainView: THtmlViewer
       Left = 0
@@ -379,11 +363,10 @@ object frmWikiLocal: TfrmWikiLocal
       Align = alClient
       TabOrder = 2
       TabStop = True
+      OnKeyDown = hvKeyDown
       OnMouseUp = hvMouseUp
       Touch.InteractiveGestures = [igPan]
       Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia]
-      ExplicitLeft = -2
-      ExplicitTop = 199
     end
     object panPageInfo: TPanel
       Left = 0
@@ -402,7 +385,6 @@ object frmWikiLocal: TfrmWikiLocal
       StyleElements = [seFont]
       OnContextPopup = panPageInfoContextPopup
       OnDblClick = panPageInfoDblClick
-      ExplicitWidth = 423
     end
   end
   object StatusBar1: TStatusBar
@@ -423,8 +405,6 @@ object frmWikiLocal: TfrmWikiLocal
       item
         Width = 50
       end>
-    ExplicitTop = 434
-    ExplicitWidth = 616
   end
   object ApplicationEvents1: TApplicationEvents
     OnActivate = ApplicationEvents1Activate
@@ -587,6 +567,10 @@ object frmWikiLocal: TfrmWikiLocal
     object miLinkEdit: TMenuItem
       Caption = 'Edit Page'
       OnClick = miLinkEditClick
+    end
+    object miLinkCopyHTML: TMenuItem
+      Caption = 'Copy selected'
+      OnClick = miLinkCopyHTMLClick
     end
     object miLinkCopy: TMenuItem
       Caption = 'Copy Link'

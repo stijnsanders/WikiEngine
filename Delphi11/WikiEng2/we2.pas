@@ -290,7 +290,7 @@ type
   end;
 
 const
-  EntryClassesCount=24;//add new: increase this one!
+  EntryClassesCount=25;//add new: increase this one!
   EntryClasses:array[0..EntryClassesCount] of packed record
     n:WideString;
     c:TParseEntryClass
@@ -317,6 +317,7 @@ const
     (n:'debug';      c:TpeDebugStep),
     (n:'noop';       c:TpeNoOp),
     (n:'skip';       c:TpeNoOp),
+    (n:'group';      c:TpeCommandSequence),
     (n:'command';    c:TpeWikiCommand),
     (n:'include';    c:TpeInclude),
     (n:'process';    c:TpeProcess),
@@ -1081,7 +1082,7 @@ function TpeReplace.Perform(Engine:TWikiEngine;const Data:string):string;
 var
   mc:TMatchCollection;
   m:TMatch;
-  i,x:integer;
+  i,p:integer;
 begin
   if MatchAgain then
    begin
@@ -1095,15 +1096,16 @@ begin
     mc:=re.Matches(Data);
     Result:='';
     i:=0;
-    x:=1;
+    p:=1;
     while (i<mc.Count) and ((ReplaceCount=0) or (i<ReplaceCount)) do
      begin
       m:=mc[i];
-      Result:=Result+Copy(Data,x,m.Index-x)+ReplaceWith;
-      x:=m.Index+m.Length;
+      //ATTENTION: backreferences (ilke '$1') not supported here
+      Result:=Result+Copy(Data,p,m.Index-p)+ReplaceWith;
+      p:=m.Index+m.Length;
       inc(i);
      end;
-    Result:=Result+Copy(Data,x,Length(Data)-x+1);
+    Result:=Result+Copy(Data,p,Length(Data)-p+1);
    end;
 end;
 
@@ -1630,7 +1632,9 @@ begin
     else
       Result:=w;
     Result:=pePerform(FUpdDo,Engine,Result);
-   end;
+   end
+  else
+    Result:=Data;
   if r then
     Result:=pePerform(FFound,Engine,Result)
   else

@@ -84,6 +84,7 @@ type
     actFocusPageBar: TAction;
     actViewHTML: TAction;
     miLinkCopy: TMenuItem;
+    miLinkCopyHTML: TMenuItem;
     procedure hvRightClick(Sender: TObject;
       Parameters: TRightClickParameters);
     procedure hvMainViewHotSpotClick(Sender: TObject; const SRC: string;
@@ -135,6 +136,9 @@ type
     procedure redolinks1Click(Sender: TObject);
     procedure importPMWiki1Click(Sender: TObject);
     procedure hvMainViewHotSpotCovered(Sender: TObject; const SRC: string);
+    procedure hvKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure miLinkCopyHTMLClick(Sender: TObject);
   private
     FPath,FPagePath,FHeader:string;
     FEngine:TWikiEngine;
@@ -143,6 +147,7 @@ type
     FWikiPage,FWikiGroup,FWikiData,FSideExt,FContextLink:string;
     FWikiPageAge,FWikiSideBarAge:TDateTime;
     FIsEditing,FPageModified:boolean;
+    FContextView:THtmlViewer;
     FContextPoint:TPoint;
     qpf:int64;
 
@@ -739,6 +744,11 @@ begin
       IsEditing:=false;
 end;
 
+procedure TfrmWikiLocal.miLinkCopyHTMLClick(Sender: TObject);
+begin
+  FContextView.CopyToClipboard;
+end;
+
 procedure TfrmWikiLocal.miLinkCopyClick(Sender: TObject);
 begin
   Clipboard.AsText:=FContextLink;
@@ -1016,6 +1026,13 @@ begin
   StatusBar1.Panels[3].Text:=SRC;
 end;
 
+procedure TfrmWikiLocal.hvKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key=word('C')) and (Shift=[ssCtrl]) then
+    (Sender as THtmlViewer).CopyToClipboard;
+end;
+
 procedure TfrmWikiLocal.hvMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
@@ -1023,7 +1040,8 @@ var
 begin
   p.X:=X;
   p.Y:=Y;
-  FContextPoint:=(Sender as TWinControl).ClientToScreen(p);
+  FContextView:=Sender as THTMLViewer;
+  FContextPoint:=FContextView.ClientToScreen(p);
 end;
 
 procedure TfrmWikiLocal.hvRightClick(Sender: TObject;
@@ -1037,10 +1055,10 @@ begin
   miLinkFollow.Enabled:=b;
   miLinkLinks.Enabled:=b;
   miLinkBackLinks.Enabled:=b;
+  miLinkCopyHTML.Enabled:=FContextView.SelLength<>0;
   miLinkCopy.Enabled:=b;
 
   pmLink.Popup(FContextPoint.X,FContextPoint.Y);
-
 end;
 
 procedure TfrmWikiLocal.miLinkFollowClick(Sender: TObject);

@@ -44,10 +44,9 @@ object fWikiEdit: TfWikiEdit
     Align = alClient
     TabOrder = 1
     TabStop = True
+    OnKeyDown = HtmlViewer1KeyDown
     Touch.InteractiveGestures = [igPan]
     Touch.InteractiveGestureOptions = [igoPanSingleFingerHorizontal, igoPanSingleFingerVertical, igoPanInertia]
-    ExplicitWidth = 616
-    ExplicitHeight = 308
   end
   object Panel1: TPanel
     Left = 0
@@ -57,7 +56,6 @@ object fWikiEdit: TfWikiEdit
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 616
     object Memo1: TMemo
       Left = 0
       Top = 0
@@ -67,7 +65,6 @@ object fWikiEdit: TfWikiEdit
       ScrollBars = ssVertical
       TabOrder = 0
       WantTabs = True
-      ExplicitWidth = 412
     end
     object ListBox1: TListBox
       Left = 416
@@ -78,7 +75,6 @@ object fWikiEdit: TfWikiEdit
       ItemHeight = 21
       TabOrder = 1
       Visible = False
-      ExplicitLeft = 412
     end
   end
   object odWikiRuleSet: TOpenDialog

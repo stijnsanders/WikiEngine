@@ -45,6 +45,8 @@ type
     procedure aLoadExecute(Sender: TObject);
     procedure aSaveExecute(Sender: TObject);
     procedure aParseChangeExecute(Sender: TObject);
+    procedure HtmlViewer1KeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     FPath,FWRS,FHeader:string;
     FEngine:TWikiEngine;
@@ -217,6 +219,13 @@ begin
   //
   Caption:='HS:'+SRC;
   Handled:=true;
+end;
+
+procedure TfWikiEdit.HtmlViewer1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key=$43) and (Shift=[ssCtrl]) then
+    HtmlViewer1.CopyToClipboard;
 end;
 
 procedure TfWikiEdit.HtmlViewer1Link(Sender: TObject; const Rel, Rev,

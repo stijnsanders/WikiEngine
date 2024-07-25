@@ -1,0 +1,332 @@
+wikiparse 2
+/*
+wikiparse_markdown.xml
+WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
+version 2.0.0.68
+by Stijn Sanders <stijn@yoy.be>
+2014-2024
+
+When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
+To match over lines "." is used in stead of ".".
+*/
+
+jump Start
+
+//This label is called to replace parse-codes local URL, adapt to your site
+label LocalURLs
+	//Link to a page that exists
+	replace @@w%
+		with mdw.php?n=
+	//Link to a page that doesn't exist (edit page link)
+	replace @@e%
+		with mdw.php?action=edit?n=
+
+label FindWikiLinks
+	//Extract WikiLinks, feel free to change or add other alternatives in the main "(|)"
+	//The "([A-Z][A-Za-z0-9_]+?\.)?" prefix handles groups
+	extract ([A-Z][A-Za-z0-9_]+?\.)?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)
+		prefix %D%
+		match
+			wiki
+				found
+					replace ^(.+)$
+						with <a href="@@w%$1" class="wikilink">$1</a>
+				missing
+					replace ^(.+)$
+						with <a href="@@e%$1" class="wikiedit">$1<span>?</span></a>
+
+label Start
+	//CRLF/LF fix
+	replace \r\n
+		with \x0A
+	append \x0A
+
+	jump MarkDown
+
+	//CRLF/LF fix
+	replace \n
+		with \x0D\x0A
+
+
+label MarkDown
+	
+	jump DoRawHtml
+
+	//TODO: global escapes for \\[-\\`\*_\{\}\[\]\(\)#\+\.!]
+	//Headers: underlined
+	replace ^(.+)\n=+?(\n|$)
+		multiline
+		with </p>\x0A<h1>$1</h1>\x0A<p>
+	replace ^(.+)\n-+?(\n|$)
+		multiline
+		with </p>\x0A<h2>$1</h2>\x0A<p>
+	//Headers: hashes prefix
+	replace ^(######) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h6>$2</h6>\x0A<p>
+	replace ^(#####) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h5>$2</h5>\x0A<p>
+	replace ^(####) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h4>$2</h4>\x0A<p>
+	replace ^(###) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h3>$2</h3>\x0A<p>
+	replace ^(##) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h2>$2</h2>\x0A<p>
+	replace ^(#) +(.+?)( \1)?$
+		multiline
+		with </p>\x0A<h1>$2</h1>\x0A<p>
+	
+	//Blockquotes: a paragraph prefixed GT
+	split ^&gt; +(.*)(\n.+)*\n\n
+		multiline
+		match
+			check (^&gt; +.*(\n|$))+
+				multiline
+				//Are all lines prefixed? Then parse below
+				else
+					replace ^&gt; 
+						multiline
+						with </p>\x0A<blockquote>
+					replace \n
+						with <br />
+					append </blockquote>\x0A<p>
+	
+	//Blockquotes: a series of lines prefixed GT
+	split (^&gt; +.*(\n|$))+
+		multiline
+		match
+			replace ^&gt; +
+				multiline
+				matchagain 0
+				with
+			
+			//Recursive!
+			jump MarkDown
+			
+			prepend </p>\x0A<blockquote>
+			append </blockquote>\x0A<p>
+	
+	//Emphasis
+	extract (( |^)[\*_]( |$)|\\[\*_])
+		multiline
+		prefix %C%
+		match
+			replace ^\\
+				multiline
+				matchagain 0
+				with
+		inbetween
+			replace (\*\*|__)(.*?)\1
+				with <strong>$2</strong>
+			replace ([\*_])(.*?)\1
+				with <em>$2</em>
+	
+	//Code inline
+	split `` ?(.+) ?``
+		match
+			submatch 1
+			prepend <code>
+			append </code>
+	split `([^`]+?)`
+		match
+			submatch 1
+			prepend <code>
+			append </code>
+	
+	//Quick links
+	split &lt;(https?:.+?)&gt;
+		match
+			submatch 1
+			replace ^(.+)$
+				multiline
+				with <a href="$1">$1</a>
+	split &lt;([^@]+?@.+?\.[a-z]{2,})&gt;
+		match
+			submatch 1
+			//'randomization': render into HTML coded entities
+			replace	 x
+				with	&#x78;
+				//(x first: used in below codes)
+			replace a
+				with &#x61;
+			replace c
+				with &#99;
+			replace e
+				with &#x65;
+			replace g
+				with &#103;
+			replace i
+				with &#x69;
+			replace k
+				with &#107;
+			replace m
+				with &#x6D;
+			replace o
+				with &#111;
+			replace q
+				with &#x71;
+			replace r
+				with &#114;
+			replace t
+				with &#x74;
+			replace v
+				with &#118;
+			replace z
+				with &#122;
+			replace @
+				with &#x40;
+			replace \.
+				with &#x2E;
+			replace ^(.+)$
+				with <a href="mailto:$1">$1</a>
+	
+	jump DoLists
+	jump DoCodeBlocks
+	//TODO: make raw HTML elements not work in code blocks
+	
+	//Horizontal rule
+	replace ^\s*([-_\*\+\&#xB0;])(\s?\1){2,}\s*$
+		multiline
+		with <hr />
+	
+	//Double EOL's end paragraph and start new
+	prepend <p>
+	append </p>\x0A
+	/*
+	extract </[a-z]+?>\n
+		prefix %B%
+		match
+	*/
+	group
+			replace \n( *?\n)+
+				with </p>\x0A<p>\x0A
+	
+	//Clip superfluous empty paragraphs generated above
+	replace <p>\x0A?</p>\x0A
+		with
+	
+	//Line break on lines that end in two or more spaces
+	replace   +\n
+		with <br />\x0A
+	
+	jump DoImages
+	jump DoLinks
+	jump FindWikiLinks
+
+
+label DoLists
+	split (^|\n\s*\n)(([-\+\*]|\d+\.)[ \t].*(\n|$)(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?((\s*\n)?((   ?|\t).*\n)+(((?!([-\+\*]|\d+\.)[ \t])\S.+(\n|$))*\s*\n)?)*)+
+		multiline
+		match
+			replace ^\n
+				multiline
+				matchagain 0
+				with
+			check \n\n(?!$)
+				do
+					replace \n$
+						multiline
+						matchagain 0
+						with
+			check ^\d
+				multiline
+				do
+					prepend <%%ORDEREDLIST%%/>\x0A
+			split ([-\+\*]|\d+\.)[ \t]+.*(\n|$)(((?!([-\+\*]|\d+\.)[ \t]+)\S.+(\n|$))*\s*\n)?((\s*\n)?((   ?|\t).*\n)+(((?!([-\+\*]|\d+\.)[ \t]+)\S.+(\n|$))*\s*\n)?)*
+				multiline
+				match
+					replace ^([-\+\*]|\d+\.)?[ \t]+
+						multiline
+						matchagain 0
+						with
+					replace \n$
+						multiline
+						matchagain 0
+						with
+					check \n
+						do
+							jump MarkDown
+						else
+							check ^([-\+\*]|\d/\.| ?)[ \t]
+								multiline
+								do
+									jump MarkDown
+					prepend <li>
+					append </li>\x0A
+			replaceif ^<%%ORDEREDLIST%%/>\x0A
+				multiline
+				do
+					prepend </p>\x0A<ol>\x0A
+					append </ol>\x0A<p>
+				else
+					prepend </p>\x0A<ul>\x0A
+					append </ul>\x0A<p>
+	replace ^(\d+)\\(\.[ \t])
+		multiline
+		with $1$2
+
+label DoCodeBlocks
+	split (^|\n\s*\n)((    |\t).*\n)+
+		multiline
+		match
+			replace ^\n\s*\n
+				multiline
+				matchagain 0
+				with
+			replace ^(    |\t)
+				multiline
+				matchagain 0
+				with
+			prepend </p>\x0A<pre><code>
+			append </code></pre>\x0A<p>
+
+label DoRawHtml
+	split <([a-z]+?)( [^>]*?)?(>(.*?)</\1>|/>)\n?
+		inbetween
+			//Ignore empty space between/before/after HTML sections
+			check ^[\x00-\x20]*$
+				multiline
+				else
+					//HTML encode, but ignore ampersands in a valid HTML entity
+					extract &(#[0-9]+?|#x[0-9a-f]+?|[a-z]+?);
+						prefix %A%
+						inbetween
+							htmlencode
+
+label DoImages
+	replace !\[([^\]\n]+?)\]\(([^\)\n]+?)\s?"(.+?)"\)
+		with <img src="$2" alt="$1" title="$3" />
+	replace !\[([^\]\n]+?)\]\(([^\)\n]+?)\)
+		with <img src="$2" alt="$1" />
+	process !\[[^\]\n]+?\] ?\[[^\]\n]*?\]
+		do
+			replaceif !\[([^\]\n]+?)\] ?\[([^\]\n]+?)\](.*)\n *?\[\2\]: *(&lt;(.+)&gt;|([^ \n]+))( +| *\n *)("(.*)"|'(.*)'|\((.*)\))(\n|$)
+				with <img src="$5$6" alt="$1" title="$9$10$11" />$3$12
+				else
+					replace !\[([^\]\n]+?)\] ?\[([^\]\n]+?)\](.*)\n *?\[\2\]: *(&lt;(.+)&gt;|([^ \n]+))(\n|$)
+						with <img src="$5$6" alt="$1" />$3$7
+
+label DoLinks
+	replace \[([^\]\n]+?)\]\(([^\)\n]+?)\s?"(.+?)"\)
+		with <a href="$2" title="$3">$1</a>
+	replace \[([^\]\n]+?)\]\(([^\)\n]+?)\)
+		with <a href="$2">$1</a>
+	process \[[^\]\n]+?\] ?\[[^\]\n]*?\]
+		do
+			replaceif \[([^\]\n]+?)\] ?\[\](.*)\n *?\[\1\]: *(&lt;(.+)&gt;|([^ \n]+))( +| *\n *)("(.*)"|'(.*)'|\((.*)\))(\n|$)
+				with <a href="$4$5" title="$8$9$10">$1</a>$2$11
+				else
+					replaceif \[([^\]\n]+?)\] ?\[\](.*)\n *?\[\1\]: *(&lt;(.+)&gt;|([^ \n]+)) *(\n|$)
+						with <a href="$4$5">$1</a>$2$6
+						else
+							replaceif \[([^\]\n]+?)\] ?\[([^\]\n]+?)\](.*)\n *?\[\2\]: *(&lt;(.+)&gt;|([^ \n]+))( +| *\n *)("(.*)"|'(.*)'|\((.*)\))(\n|$)
+								with <a href="$5$6" title="$9$10$11">$1</a>$3$12
+								else
+									replace \[([^\]\n]+?)\] ?\[([^\]\n]+?)\](.*)\n *?\[\2\]: *(&lt;(.+)&gt;|([^ \n]+)) *(\n|$)
+										with <a href="$5$6">$1</a>$3$7
