@@ -218,6 +218,7 @@ label Start
 							//Strip preceding spaces
 							replace ^ 
 								multiline
+								matchagain 0
 								with
 							
 							//Fix EOL's for later since br's would change layout
@@ -422,6 +423,7 @@ label DoIndent
 			//Clear any empty lines
 			replace ^ *?\n
 				multiline
+				matchagain 0
 				with
 			*/       
 			
@@ -448,6 +450,7 @@ label DoLists
 			//Clear any empty lines
 			replace ^ *?\n
 				multiline
+				matchagain 0
 				with
 			
 			//Check list type, start/end
@@ -478,7 +481,8 @@ label DoLists
 				
 					//Remove prefixes
 					replace ^[\*#:]
-						count 1
+						multiline
+						matchagain 0
 						with
 					
 					//Recurse
@@ -589,7 +593,7 @@ label DoTables_WithSpanNumbers
 
 			//Clear any empty lines
 			replace ^ *?\n
-				\x0A
+				with \x0A
 			
 			//Check nested tables
 			extract (^(\|-?[0-9]*?\|){2,}.+?$\n?)+
@@ -601,6 +605,7 @@ label DoTables_WithSpanNumbers
 					//Remove prefixes
 					replace ^\|-?[0-9]*?\|
 						multiline
+						matchagain 0
 						with
 
 					//Recurse

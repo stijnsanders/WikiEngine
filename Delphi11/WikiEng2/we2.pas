@@ -149,6 +149,7 @@ type
   private
     ReplaceWith:string;
     ReplaceCount:integer;
+    MatchAgain:boolean;
   public
     procedure AfterConstruction; override;
     function ParseLine(const Info:TParseLineData):TParseEntry; override;
@@ -1059,6 +1060,7 @@ begin
   //default
   ReplaceWith:='';
   ReplaceCount:=0;
+  MatchAgain:=true;
 end;
 
 function TpeReplace.ParseLine(const Info:TParseLineData):TParseEntry;
@@ -1071,15 +1073,38 @@ begin
       raise Exception.Create('ReplaceCount not numeric');
    end
   else
+  if Info.Command='matchagain' then MatchAgain:=Info.Parameter<>'0' else
   Result:=inherited;
 end;
 
 function TpeReplace.Perform(Engine:TWikiEngine;const Data:string):string;
+var
+  mc:TMatchCollection;
+  m:TMatch;
+  i,x:integer;
 begin
-  if ReplaceCount=0 then
-    Result:=re.Replace(Data,ReplaceWith)
+  if MatchAgain then
+   begin
+    if ReplaceCount=0 then
+      Result:=re.Replace(Data,ReplaceWith)
+    else
+      Result:=re.Replace(Data,ReplaceWith,ReplaceCount);
+   end
   else
-    Result:=re.Replace(Data,ReplaceWith,ReplaceCount);
+   begin
+    mc:=re.Matches(Data);
+    Result:='';
+    i:=0;
+    x:=1;
+    while (i<mc.Count) and ((ReplaceCount=0) or (i<ReplaceCount)) do
+     begin
+      m:=mc[i];
+      Result:=Result+Copy(Data,x,m.Index-x)+ReplaceWith;
+      x:=m.Index+m.Length;
+      inc(i);
+     end;
+    Result:=Result+Copy(Data,x,Length(Data)-x+1);
+   end;
 end;
 
 { TpeReplaceIf }
