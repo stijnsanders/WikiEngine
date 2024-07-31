@@ -1,13 +1,12 @@
 wikiparse 2
 /*
-wikiparse_markdown.xml
-WikiParse XML to parse MarkDown  http://daringfireball.net/projects/markdown/
+markdown.wrs
+WikiEngine rule set to parse MarkDown  http://daringfireball.net/projects/markdown/
 version 2.0.0.68
 by Stijn Sanders <stijn@yoy.be>
 2014-2024
 
 CRLF's are changed to LF's only, since that triggers the RegEx's "$", but not ".".
-To match over lines "." is used in stead of ".".
 */
 
 //CRLF/LF fix

@@ -290,7 +290,11 @@ end;
 
 procedure TfWikiEdit.aLoadExecute(Sender: TObject);
 begin
-  if OpenDialog1.Execute then Memo1.Lines.LoadFromFile(OpenDialog1.FileName);
+  if OpenDialog1.Execute then
+   begin
+    Memo1.Lines.LoadFromFile(OpenDialog1.FileName);
+    Memo1.Modified:=true;
+   end;
 end;
 
 procedure TfWikiEdit.aParseChangeExecute(Sender: TObject);

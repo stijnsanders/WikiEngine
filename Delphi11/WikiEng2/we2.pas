@@ -251,6 +251,10 @@ type
     procedure LoadInclude(const FilePath:string);
   end;
 
+  TpeConcat=class(TpeCommandSequence)
+    function Perform(Engine:TWikiEngine;const Data:string):string; override;
+  end;
+
   TpeText=class(TParseEntry)
   private
     FText:string;
@@ -290,7 +294,7 @@ type
   end;
 
 const
-  EntryClassesCount=25;//add new: increase this one!
+  EntryClassesCount=26;//add new: increase this one!
   EntryClasses:array[0..EntryClassesCount] of packed record
     n:WideString;
     c:TParseEntryClass
@@ -299,7 +303,7 @@ const
     (n:'submatch';   c:TpeSubMatch),
     (n:'label';      c:TpeLabel),
     (n:'check';      c:TpeCheck),
-//    (n:'concat';     c:TpeConcat),
+    (n:'concat';     c:TpeConcat),
     (n:'text';       c:TpeText),
     (n:'uppercase';  c:TpeUpperCase),
     (n:'lowercase';  c:TpeLowerCase),
@@ -1742,6 +1746,21 @@ end;
 function TpeText.Perform(Engine:TWikiEngine;const Data:string):string;
 begin
   Result:=FText;
+end;
+
+{ TpeConcat }
+
+function TpeConcat.Perform(Engine: TWikiEngine; const Data: string): string;
+var
+  pe:TParseEntry;
+begin
+  Result:='';
+  pe:=First;
+  while pe<>nil do
+   begin
+    Result:=Result+pePerform(pe,Engine,Result);
+    pe:=pe.Next;
+   end;
 end;
 
 end.

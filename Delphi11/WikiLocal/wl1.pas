@@ -774,9 +774,10 @@ begin
       l:=f.Size;
       SetLength(d,l);
       if f.Read(d[0],l)<>l then RaiseLastOSError;
-      GetFileInformationByHandle(f.Handle,fi);
-      if FileTimeToSystemTime(fi.ftLastWriteTime,st) then
-        PageAge:=SystemTimeToDateTime(st) else PageAge:=0.0;
+      if GetFileInformationByHandle(f.Handle,fi) and FileTimeToSystemTime(fi.ftLastWriteTime,st) then
+        PageAge:=SystemTimeToDateTime(st)
+      else
+        PageAge:=0.0;//RaiseLastOSError?
     finally
       f.Free;
     end;
