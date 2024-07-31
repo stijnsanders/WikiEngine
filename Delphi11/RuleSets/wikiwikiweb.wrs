@@ -1,0 +1,195 @@
+wikiparse 2
+/*
+wikiwkikweb.wrs
+WikiEgine rule set to mimic http://c2.com/cgi/wiki?TextFormattingRules
+version 2.0.0.70
+by Stijn Sanders <stijn@yoy.be>
+2006,2024
+
+CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+When adapting for own use, change relative URL prefixes in "LocalURLs" below
+*/
+
+jump Start
+
+//This label is called to replace parse-codes local URL, adapt to your site
+label LocalURLs
+	//Link to a page that exists
+	replace @@w%
+		with http://c2.com/cgi/wiki?
+	//Link to a page that doesn't exist (edit page link)
+	replace @@e%
+		with http://c2.com/cgi/wiki?edit=
+	
+label Start
+	//CRLF/LF fix
+	replace \r\n
+		with \x0A
+	append \x0A
+		
+	//First pre-process text for post-processing styles
+	replace @@
+		with @@k%
+		
+	//Italics and Bold, fix up front when used to delimit closeby text
+	replace ([^']|^)''''('')?([^']|$)
+		multiline
+		with $1@@hspan%@@h/span%$3
+	replace '''(.+?)'''
+		with @@hb%$1@@h/b%
+	replace ''(.+?)''
+		with @@hi%$1@@h/i%
+		
+	//Prefix characters
+	split ^\t([^:]+?):\t.*$
+		multiline
+		match
+			replace ^\t([^:]+?):\t(.*)$
+				multiline
+				with @@hdl%@@hdt%$1@@h/dt%@@hdd%$2@@h/dd%@@h/dl%
+		inbetween
+			replace ((^[ \t](.+)$\n?)+)
+				multiline
+				with @@hpre%$1@@h/pre%\x0A
+	jump DoListUL
+	
+	//Replace dashes with HR
+	replace ^----+$
+		multiline
+		with @@hhr /%
+	
+	//ISBN numbers
+	split (\[ISBN:? ?[-0-9X]+\]|ISBN: ?[-0-9X]+)
+		match
+			replace ^(\[ISBN:? ?([-0-9X]+)\]|ISBN: ?([-0-9X]+))$
+				with $2$3|$2$3
+			split ^(.+?)\|
+				match
+					submatch 1
+					replace -
+						with
+					prepend @@ha href="http://www.amazon.com/exec/obidos/ISBN=
+					append "%ISBN 
+			append @@h/a%
+
+
+	//Post-processing to get additional layout correct
+	split @@h(.+?)%
+		match
+			replace ^@@h
+				with <
+			replace %$
+				with >
+		inbetween
+			
+			//Plain URL's
+			split (www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\+\(\)?&=#:;/a-z0-9]+
+				ignorecase
+				match
+					replaceif ^(.*\.(jpg|jpeg|png|gif|bmp))$
+						with <img src="$1" />
+						else
+							replace ^(.*)$
+								with <a href="$1">$1</a>
+					
+				inbetween
+					//WikiNames
+						//WikiWikiWeb's WikiPattern is traditionally strict and straight-forward
+					extract \b[A-Z][a-z]+[A-Z][A-Za-z]+\b
+						prefix %D%
+						match
+							wiki
+								found
+									replace ^(.+)$
+										with <a href="@@w%$1" class="wikilink">$1</a>
+								missing
+									replace ^(.+)$
+										with <a href="@@e%$1" class="newwiki">$1<span>?</span></a>
+						inbetween
+						
+							//HTMLEncode, but leave EOL's
+							split \n
+								inbetween
+									htmlencode
+
+	jump LocalURLs
+
+	//Double EOL starts new paragraph
+	replace (\n\n)
+		with </p>$1<p>
+
+	//Post-processing to get additional layout correct
+	replace @@k%
+		with @@
+
+	//Enclose all in a paragraph, remove empty ones
+	prepend <p>\x0A
+	append </p>\x0A
+	replace <p>\s*?</p>\s*
+		with
+	
+	//CRLF/LF fix
+	replace \n
+		with \x0D\x0A
+
+label DoListUL
+	split (^\*.+?$\n?)+
+		multiline
+		match
+			//Check nested level
+			extract (^\*\*.+?$\n?)+
+				multiline
+				prefix %E%
+				match
+					//Remove prefixes
+					replace ^\*
+						multiline
+						matchagain 0
+						with
+					//Recurse
+					jump DoListUL
+				inbetween
+					replace ^\*(.+?)$
+						multiline
+						with @@hli%$1@@h/li%
+					prepend @@hul%
+					append @@h/ul%\x0A
+
+
+label Start__old
+	//Plain URL's first (might contain WikiName)
+	extract (www\.|(http|https|file|ftp|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\(\)?&=#:;/A-Z0-9]+
+		match
+			replace (.+)
+				with <a href="$1">$1</a>
+		inbetween
+
+			//Replace dashes with HR
+			replace ^----+
+					with <hr />
+			
+			//Lists
+			jump DoLists
+
+			//Double EOL's end paragraph and start new
+			replace \n( *?\n)+
+					with \x0A</p>\x0A<p>\x0A
+			
+			//Post-processing to get additional layout correct
+			replace @@h(.+?)%
+					with <$1>
+			replace @@n%
+					with \x0A
+			replace @@k%
+					with @@
+
+			//Enclose all in a paragraph, remove empty ones
+			prepend <p>\x0A
+			append </p>\x0A
+			replace <p>\s*?</p>\s*
+					with
+
+	//CRLF/LF fix
+	replace \n
+		with \x0D\x0A

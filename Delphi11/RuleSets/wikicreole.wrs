@@ -1,0 +1,274 @@
+wikiparse 2
+/*
+wikicreole.prs
+WikiEngine rule set to parse WikiCreole 1.0  http://wikicreole.org/wiki/Creole1.0
+version 2.0.0.70
+by Stijn Sanders <stijn@yoy.be>
+2013,2024
+*/
+
+//CRLF/LF fix
+replace \r\n
+	with \x0A
+append \x0A
+
+jump WikiCreole
+
+//CRLF/LF fix
+replace \n
+	with \x0D\x0A
+	
+label WikiCreole
+	extract ^\{\{\{$(.+?)^\}\}\}$
+		prefix %A%
+		match
+			submatch 1
+			prepend <pre>
+			append </pre>
+		inbetween
+			extract ~\{(?=\{\{)
+				prefix %B%
+				match
+					//Leave as is
+				inbetween
+					extract \{\{\{(.+?)\}\}\}
+						prefix %C%
+						match
+							submatch 1
+							prepend <tt>
+							append </tt>
+							replace \n
+								with <br />\x0A
+						inbetween
+							extract ~(\S)
+								prefix %D%
+								match
+									submatch 1
+								inbetween
+									
+									jump DoLinks
+									jump DoLists
+									jump DoImages
+									jump DoTables
+									
+									split <<<.+?>>>
+										match
+											htmlencode
+									
+									replace \*\*(.*?(\n.+?)*?)\*\*
+										with <strong>$1</strong>
+									replace //(.*?(\n.+?)*?)//
+										with <em>$1</em>
+									
+									replace ^\s*?====== (.+?)=?=?=?=?=?=?\s*$
+										multiline
+										with <h6>$1</h6>
+									replace ^\s*?===== (.+?)=?=?=?=?=?\s*$
+										multiline
+										with <h5>$1</h5>
+									replace ^\s*?==== (.+?)=?=?=?=?\s*$
+										multiline
+										with <h4>$1</h4>
+									replace ^\s*?=== (.+?)=?=?=?\s*$
+										multiline
+										with <h3>$1</h3>
+									replace ^\s*?== (.+?)=?=?\s*$
+										multiline
+										with <h2>$1</h2>
+									replace ^\s*?= (.+?)=?\s*$
+										multiline
+										with <h1>$1</h1>
+									
+									replace ^\s*?----\s*$
+										multiline
+										with <hr />
+									
+									prepend <p>
+									append </p>
+									split \n\n
+										match
+											prepend </p>
+											append <p>
+										inbetween
+											split <p>.+?</p>
+												match
+													replace (\n|\\\\)
+														with <br />\x0A
+
+label DoLists
+	split ^([\*#].*?$\n?( *?\n)?)+
+		multiline
+		match
+		
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				matchagain 0
+				with
+			
+			//Check list type, start/end
+			check ^#
+				do
+					//Ordered List
+					prepend </p><ol>\x0A
+					append </ol><p>\x0A
+				else
+					//Unordered list
+					prepend </p><ul>\x0A
+					append </ul><p>\x0A
+			
+			//Check nested levels
+			extract (^[\*#][\*#].*?$\n?)+
+				multiline
+				prefix %E%
+				//Extraction needs a suffix with EOL to preserve line breaks
+				suffix #\x0A
+				match
+				
+					//Remove prefixes
+					replace ^[\*#]
+						multiline
+						matchagain 0
+						with
+					
+					//Recurse
+					jump DoLists
+					
+					//Add indentation
+					replace ^(?!$)
+						with \x20\x20\x20\x20
+				inbetween
+					//Take an item per line
+					split \n
+						inbetween
+							//Enclose items of list
+							replace ^[\*#](.*?)$
+								multiline
+								with   <li>$1</li>
+
+			//Fix nested lists
+			replace </(li)>\n\x20\x20\x20\x20</p><([ou]l)>(.+?</\2>)<p>
+				with \x0A\x20\x20\x20\x20<$2>$3</$1>
+
+
+label DoLinks
+	extract \[\[(.+?)\]\]
+		prefix %F%
+		match
+			submatch 1
+			check \|
+				else
+					replace ^(.+?)$
+						with $1|$1
+			split \|.+$
+				match
+					htmlencode
+					append </a>
+			split ^(.+?)\|
+				match
+					submatch 1
+					check ^(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn|xxm):
+						do
+							htmlencode
+							prepend <a href="
+						else
+							////TODO if /^[a-z]+?:/ then sisterwikis?
+							wiki
+								found
+									urlencode
+									prepend <a class="w" href="
+								missing
+									urlencode
+									prepend <a class="n" href="
+					append ">
+
+
+label DoImages
+	extract \{\{(.+?)\}\}
+		prefix %H%
+		match
+			submatch 1
+			check \|
+				else
+					replace ^(.+?)$
+						multiline
+						with $1|$1
+			split \|.+$
+				match
+					htmlencode
+					append " border="0" />
+			split ^(.+?)\|
+				match
+					submatch 1
+					htmlencode
+					prepend <img src="
+					append " alt="
+
+label DoTables
+	split (^\|.+?$\n?( *?\n)?)+
+		multiline
+		match
+
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				matchagain 0
+				with
+			
+			//Start/end
+			prepend </p><table class="basetable"><tbody>\x0A
+			//Rows and cells
+			split ^\|.*?$
+				multiline
+				match
+					//Remove overfluxious prefixes
+					replace ^\|+
+						multiline
+						with |
+
+					//Create colspan codes
+					split \|\|+
+						match
+							replace \|
+								with x
+							length
+							prepend @@s
+							append %|
+
+					//Remove ending delimiter
+					replace \| *?$
+						with
+
+					//Plain cells
+					replace \|
+						with </td><td>
+
+					//Row tags, first cell will close an unexisting previous cell
+					prepend <tr valign="top">
+					append </td></tr>
+
+			//Fix first cells
+			replace <tr([^>]*?)></td>
+				with <tr$1>
+
+			//Fix empty cells and cell alignment,colspan codes
+			split <td[^>]*?>.+?</td>
+				match
+					replace <(td[^>]*?)>(.+?)@@s([0-9]+?)%</td>
+						with <$1 colspan="$3">$2</td>
+					replace <(td[^>]*?)> *?</td>
+						with <$1>&nbsp;</td>
+					replace <(td[^>]*?)>(=?) (.+?) </td>
+						with <$1 align="center">$2$3</td>
+					replace <(td[^>]*?)>(=?) (.+?)</td>
+						with <$1 align="right">$2$3</td>
+					replace <(td[^>]*?)>(.+?) </td>
+						with <$1 align="left">$2</td>
+
+			//Fix header cells
+			replace <td([^>]*?)>=(.*?)</td>
+				with <th$1>$2</th>
+
+			append </tbody></table><p>\x0A
+
+

@@ -1,0 +1,157 @@
+wikiparse 2
+/*
+twiki.wrs
+WikiEngine rule set to mimic TWiki
+version 2.0.0.70
+by Stijn Sanders <stijn@yoy.be>
+2006,2024
+*/
+
+jump Start
+label WikiFound
+	//TODO
+
+label WikiNotFound
+	//TODO
+
+label WikiWords
+	split ([A-Z][A-Za-z0-9_]+?\.)?([A-Za-z_][A-Za-z0-9_]*?[A-Z0-9][A-Za-z0-9_]*)
+
+//TODO: (see https://www.twiki.org/cgi-bin/view/TWiki/TextFormattingRules)
+//- %TOC% (and "---++!!")
+//- lists
+//- definition list
+//- tables
+//- WikiWords!
+//- anchors
+//- links
+//- literal, sticky
+
+label Start
+	//CRLF/LF fix
+	replace \r\n
+		with \x0A
+	append \x0A
+		
+	//Treat tabs as spaces
+	;replace \t
+	;	with  
+
+	//Verbatim
+	extract ^<verbatim>$(.+?)^</verbatim>$
+		multiline
+		prefix @A@
+		match
+			submatch 1
+			prepend <xmp>
+			append </xmp>
+		inbetween
+		
+			//Pre
+			extract ^<pre>$(.+?)^</pre>$
+				prefix @B@
+				match
+					submatch 1
+					htmlencode
+					prepend <pre>
+					append </pre>
+				inbetween
+				
+				
+					//Forced Links
+					extract (\s|^)\[\[(.+?)\]\]
+						multiline
+						prefix @C@
+						match
+							//Double link text
+							concat
+								//one to check
+								group
+									submatch 2
+									split \s([a-z])
+										match
+											submatch 1
+											uppercase
+								//separator
+								text ][
+								//one to display
+								submatch 2
+							
+							//Now check the first part
+							wiki ^(.+)(#.+)?\]\[$
+								multiline
+								with $1
+								found
+									jump WikiFound
+								missing
+									jump WikiNotFound
+							
+						inbetween
+						
+							//WikiWords
+							jump WikiWords
+
+							//HTMLEncode here? EOL's are fixed to LF only, so htmlencode doesn't do BR's here
+							htmlencode
+
+							//First pre-process text for post-processing styles
+							replace @@
+								with @@k%
+							//Bold Italic
+							replace __(\S.+?\S)__
+								with @@hb%@@hi%$1@@h/i%@@h/b%
+							//Italic
+							replace _(\S.+?\S)_
+								with @@hi%$1@@h/i%
+							//Bold
+							replace \*(\S.+?\S)\*
+								with @@hb%$1@@h/b%
+							//Bold Fixed Font
+							replace ==(\S.+?\S)==
+								with @@hcode%@@hb%$1@@h/b%@@h/code%
+							//Fixed Font
+							replace =(\S.+?\S)=
+								with @@hcode%$1@@h/code%
+							//Separator
+							replace ^---+ *?$
+								multiline
+								with @@hhr /%
+
+
+							//Headers
+							extract ^-{3,}(\+{1,6})(.+)$
+								multiline
+								match
+									concat
+										text @@hh
+										group
+											submatch 1
+											length
+										text %
+										submatch 2
+										text @@h/h
+										group
+											submatch 1
+											length
+										text %
+							
+							//Double EOL's end paragraph and start new
+							replace \n( *?\n)+
+								with \x0A</p>\x0A<p>\x0A
+							//Single EOL's
+							replace \n
+								with <br />\x0A
+							//Post-processing to get additional layout correct
+							replace @@h(.+?)%
+								with <$1>
+							replace @@n%
+								with \x0A
+							replace @@k%
+								with @@
+							
+							prepend <p>
+							append </p>
+
+	//CRLF/LF fix
+	replace \n
+		with \x0D\x0A

@@ -1,0 +1,399 @@
+wikiparse 2
+/*
+
+usemod.wrs
+WikiEngine rule set to mimic http://www.usemod.com/cgi-bin/wiki.pl?TextFormattingRules
+version 2.0.0.70
+by Stijn Sanders <stijn@yoy.be>
+2006,2024
+
+CopyRight: use at own risk, no warranties, all rights reserved, when in doubt contact me.
+
+When adapting for own use, change relative URL prefixes in "LocalURLs" below
+
+*/
+    
+jump Start
+
+//This label is called to replace parse-codes local URL, adapt to your site
+label LocalURLs
+	//Link to a page that exists
+	replace @@w%
+		with http://www.usemod.com/cgi-bin/wiki.pl?
+	//Link to a page that doesn't exist (edit page link)
+	replace @@e%
+		with http://www.usemod.com/cgi-bin/wiki.pl?action=edit&amp;id=
+    
+label InterWikis
+	replace UseMod:(\S+)			
+		with <a href="http://www.usemod.com/cgi-bin/wiki.pl?$1">UseMod:$1</a>
+	replace MeatBall:(\S+)
+		with <a href="http://www.usemod.com/cgi-bin/mb.pl?$1">MeatBall:$1</a>
+
+label Start
+
+	check ^#REDIRECT 
+		do
+			replace ^#(REDIRECT .+)(\n.*)?$
+				with $1
+			command
+		else
+			//(move everything else in group "Start" here?)
+
+	//CRLF/LF fix
+	replace \r\n
+		with \x0A
+	append \x0A
+	
+	//First pre-process text for post-processing styles
+	replace @@
+		with @@k%
+	
+	//Take "nowiki" sections
+	extract <nowiki>.*?</nowiki>
+		prefix %C%
+		match
+			replace ^<nowiki>
+				matchagain 0
+				with
+			replace </nowiki>$
+				matchagain 0
+				with
+
+			//HTMLEncode, but leave EOL's
+			split \n
+				inbetween
+					htmlencode
+			
+		inbetween
+			//Take pre sections
+			extract <pre>(.*?)</pre>
+				singleline
+				prefix %H%
+				match
+					submatch 1
+					htmlencode
+					prepend <pre>
+					append </pre>
+				inbetween
+					
+					//Lines ending with backslash, join with next
+					replace \\\n
+						with
+
+					//Bold and italics, also fix when used as separator
+					replace ([^']|^)''''('')?([^']|$)
+						multiline
+						with $1@@hspan%@@h/span%$3
+					replace '''(.+?)'''
+						with @@hb%$1@@h/b%
+					replace ''(.+?)''
+						with @@hi%$1@@h/i%
+					
+					//Allowed pseudo-HTML
+					jump DoAllowedHTML
+					
+					//Prefix characters
+					replace ((^ (.+)$\n?)+)
+						multiline
+						with @@hpre%$1@@h/pre%\x0A
+					jump DoListOL
+					jump DoListUL
+					jump DoListDL
+					jump DoIndent
+					jump DoTables
+					
+					//Page anchors
+					replace \[#([^\]"'<>]+?)\]
+						with @@ha name="$1"%@@h/a%
+					
+					//Replace dashes with HR
+					replace ^----+$
+						multiline
+						with @@hhr /%
+					
+					//Headers
+					replace ^====== (.+) =====$
+						multiline
+						with @@hh6%$1@@h/h6%
+					replace ^===== (.+) ====$
+						multiline
+						with @@hh5%$1@@h/h5%
+					replace ^==== (.+) ===$
+						multiline
+						with @@hh4%$1@@h/h4%
+					replace ^=== (.+) ===$
+						multiline
+						with @@hh3%$1@@h/h3%
+					replace ^== (.+) ==$
+						multiline
+						with @@hh2%$1@@h/h2%
+					replace ^= (.+) =$
+						multiline
+						with @@hh1%$1@@h/h1%
+					
+					//Post-processing to get additional layout correct
+					split @@h(.+?)%
+						match
+							replace ^@@h
+								with <
+							replace %$
+								with >
+						inbetween
+						
+							//HTMLEncode, but leave EOL's
+							split \n
+								inbetween
+									htmlencode
+
+							//Links
+							split \[\[.*?\]\]
+								match
+									//Free Link
+									replace ^\[\[
+										with
+									replace \]\]$
+										with
+									jump CheckWiki
+								inbetween
+								
+									//Named URL's
+									split \[(www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)([^\]]+?)\]
+										match
+											
+											replaceif ^\[([^\s]+)\s?([^\]]+?\.(jpg|jpeg|png|gif|bmp))\]$
+												with <a href="$1"><img src="$2" /></a>
+												else
+													replace ^\[([^\s]+)\s?([^\]]+?)\]$
+														with <a href="$1">[$2]</a>
+
+										inbetween
+											
+											//Plain URL's
+											split (www\.|(http|https|file|ftp|irc|ldap|mailto|news|nntp|ed2k|rlogin|shell|snews|svn|svn+ssh|telnet|tsvn):)[-_\.'\*\+\(\)?&=#:;/a-z0-9]+
+												ignorecase
+												match
+													replaceif ^(.*\.(jpg|jpeg|png|gif|bmp))$
+														with <img src="$1" />
+														else
+															replace ^(.*)$
+																with <a href="$1">$1</a>
+													
+												inbetween
+												
+													jump InterWikis
+													
+													split <a.+</a>
+														inbetween
+														
+															//WikiNames
+															;split ((([A-Z]+[a-z]+[A-Z]+[A-Za-z_0-9]*)?/[A-Z]+[a-z]+[A-Za-z_0-9]*)|[A-Z]+[a-z]+[A-Z]+[A-Za-z_0-9]*)
+															split ((([A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜ]+[A-ZÖÄÜa-züäöß_0-9]*)?/[A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜa-züäöß_0-9]*)|[A-ZÖÄÜ]+[a-zöäüß]+[A-ZÖÄÜ]+[A-ZÖÄÜa-züäöß_0-9]*)
+																match
+																	jump CheckWiki
+					
+					jump LocalURLs
+					
+					//Double EOL starts new paragraph
+					replace (\n\n)
+						with </p>$1<p>
+
+	//Post-processing to get additional layout correct
+	replace @@k%
+		with @@
+	
+	//Enclose all in a paragraph, remove empty ones
+	prepend <p>\x0A
+	append </p>\x0A
+	replace <p>\s*?</p>\s*
+		with
+
+	//CRLF/LF fix
+	replace \n	
+		with \x0D\x0A
+
+
+
+//DoAllowedHTML, a check with the identical pattern is needed to avoid infinite loops!
+label DoAllowedHTML
+	check <(b|i|u|code|tt)>(.+?)</\1>
+		do
+			replace <(b|i|u|code|tt)>(.+?)</\1>
+				with @@h$1%$2@@h/$1%
+			//Find more
+			jump DoAllowedHTML
+
+label DoListUL
+	split (^\*.+?$\n?)+
+		multiline
+		match
+			//Check nested level
+			extract (^\*\*.+?$\n?)+
+				multiline
+				prefix %E%
+				match
+					//Remove prefixes
+					replace ^\*
+						multiline
+						matchagain 0
+						with
+					//Recurse
+					jump DoListUL
+				inbetween
+					replace ^\*(.+?)$
+						multiline
+						with @@hli%$1@@h/li%
+					prepend @@hul%
+					append @@h/ul%\x0A
+
+label DoListOL
+	split (^#.+?$\n?)+
+		multiline
+		match
+			//Check nested level
+			extract (^##.+?$\n?)+
+				multiline
+				prefix %F%
+				match
+					//Remove prefixes
+					replace ^#
+						multiline
+						matchagain 0
+						with
+					//Recurse
+					jump DoListOL
+				inbetween
+					replace ^#(.+?)$
+						multiline
+						with @@hli%$1@@h/li%
+					prepend @@hol%
+					append @@h/ol%\x0A
+
+label DoIndent
+	split (^:.+?$\n?)+
+		multiline
+		match
+			//Check nested level
+			extract (^::.+?$\n?)+
+				multiline
+				prefix %G%
+				match
+					//Remove prefixes
+					replace ^:
+						multiline
+						matchagain 0
+						with
+					//Recurse
+					jump DoIndent
+				inbetween
+					//Appently usemod.com uses DT/DD (and no DT?)
+					replace ^:(.+?)$
+						multiline
+						with @@hdd%$1@@h/dd%
+					prepend @@hdl%
+					append @@h/dl%\x0A
+
+label DoListDL
+	split (^[;:].+?$\n?)+
+		multiline
+		match
+			//Check nested level
+			extract (^[;:][;:].+?$\n?)+
+				multiline
+				prefix %I%
+				//Extraction needs a suffix with EOL to preserve line breaks
+				suffix #\x0A
+				match
+					//Remove prefixes
+					replace ^[;:]
+						multiline
+						matchagain 0
+						with
+					//Recurse
+					jump DoListDL
+				inbetween
+					replace ^;(.*?)(:(.*))?$
+						multiline
+						with @@hdt%$1@@h/dt%@@hdd%$3@@h/dd%
+					replace ^:(.*?)$
+						multiline
+						with @@hdd%$1@@h/dd%
+					prepend @@hdl%
+					append @@h/dl%\x0A
+
+label DoTables
+	split (^\|\|.+?$\n?( *?\n)?)+
+		multiline
+		match
+
+			//Clear any empty lines
+			replace ^ *?\n
+				multiline
+				with
+
+			//Start/end
+			prepend @@htable class="basetable"%@@htbody%\x0A
+			//Rows and cells
+			split ^\|\|.*?$
+				match
+					//Remove overfluxious prefixes (in stead of nest?)
+					replace ^(\|\|)+
+						with ||
+
+					//Create colspan codes
+					split \|\|(\|\|)+
+							match
+								replace \|\|
+										with x
+								length
+								prepend @@s
+								append %||
+
+					//Remove ending delimiter
+					replace \|\| *?$
+						with
+
+					//Plain cells
+					replace \|\|
+						with @@h/td%@@htd%
+
+					//Row tags, first cell will close an unexisting previous cell
+					prepend @@htr valign="top"%
+					append @@h/td%@@h/tr%
+
+
+			//Fix first cells
+			replace @@htr([^%]*?)%@@h/td%
+				with @@htr$1%
+
+			//Fix empty cells and cell alignment,colspan codes
+			split @@htd[^%]*?%.+?@@h/td%
+				match
+					replace @@h(td[^%]*?)%(.+?)@@s([0-9]+?)%@@h/td%
+						with @@h$1 colspan="$3"%$2@@h/td%
+					replace @@h(td[^%]*?)% *?@@h/td%
+						with @@h$1%&nbsp;@@h/td%
+					replace @@h(td[^%]*?)%(!?) (.+?) @@h/td%
+						with @@h$1 align="center"%$2$3@@h/td%
+					replace @@h(td[^%]*?)%(!?) (.+?)@@h/td%
+						with @@h$1 align="right"%$2$3@@h/td%
+					replace @@h(td[^%]*?)%(.+?) @@h/td%
+						with @@h$1 align="left"%$2@@h/td%
+			
+
+			//Fix header cells
+			replace @@htd([^%]*?)%!(.*?)@@h/td%
+				with @@hth$1%$2@@h/th%
+            
+			append @@h/tbody%@@h/table%\x0A
+
+
+label CheckWiki
+	wiki
+		//update??
+		found
+			replace ^(.*)$
+				with <a href="@@w%$1" class="wikilink">$1</a>
+		missing
+			replace ^(.*)$
+				with <a href="@@e%$1" class="newwiki">$1<span>?</span></a>
