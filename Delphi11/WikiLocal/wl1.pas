@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.Menus, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.AppEvnts,
-  HTMLUn2, HtmlView, we2, System.Actions, Vcl.ActnList;
+  HTMLUn2, HtmlGlobals, HtmlView, we2, System.Actions, Vcl.ActnList;
 
 type
   TfrmWikiLocal = class(TForm)
@@ -85,9 +85,11 @@ type
     actViewHTML: TAction;
     miLinkCopy: TMenuItem;
     miLinkCopyHTML: TMenuItem;
+    actSearchNext: TAction;
+    actSearchPrev: TAction;
     procedure hvRightClick(Sender: TObject;
       Parameters: TRightClickParameters);
-    procedure hvMainViewHotSpotClick(Sender: TObject; const SRC: string;
+    procedure hvMainViewHotSpotClick(Sender: TObject; const SRC: ThtString;
       var Handled: Boolean);
     procedure ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
     procedure cbPageNameClick(Sender: TObject);
@@ -135,10 +137,12 @@ type
     procedure miLinkCopyClick(Sender: TObject);
     procedure redolinks1Click(Sender: TObject);
     procedure importPMWiki1Click(Sender: TObject);
-    procedure hvMainViewHotSpotCovered(Sender: TObject; const SRC: string);
+    procedure hvMainViewHotSpotCovered(Sender: TObject; const SRC: ThtString);
     procedure hvKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure miLinkCopyHTMLClick(Sender: TObject);
+    procedure actSearchNextExecute(Sender: TObject);
+    procedure actSearchPrevExecute(Sender: TObject);
   private
     FPath,FPagePath,FHeader:string;
     FEngine:TWikiEngine;
@@ -995,8 +999,8 @@ const
 
 function ShellExecute; external shell32 name 'ShellExecuteW';
 
-procedure TfrmWikiLocal.hvMainViewHotSpotClick(Sender: TObject; const SRC: string;
-  var Handled: Boolean);
+procedure TfrmWikiLocal.hvMainViewHotSpotClick(Sender: TObject;
+  const SRC: ThtString; var Handled: Boolean);
 var
   s:string;
 begin
@@ -1022,7 +1026,7 @@ begin
 end;
 
 procedure TfrmWikiLocal.hvMainViewHotSpotCovered(Sender: TObject;
-  const SRC: string);
+  const SRC: ThtString);
 begin
   StatusBar1.Panels[3].Text:=SRC;
 end;
@@ -1213,6 +1217,10 @@ var
   n:string;
   i,c,l:integer;
 begin
+
+  hvMainView.FindEx(txtSearchText.Text,cbCaseSensitive.Checked,false);
+
+
   lblMatchCount.Caption:='...';
   ro:=[roMultiLine];
   if not cbCaseSensitive.Checked then Include(ro,roIgnoreCase);
@@ -1316,6 +1324,18 @@ begin
   panGroupName.Hint:='Search';
   txtSearchText.SelectAll;
   txtSearchText.SetFocus;
+end;
+
+procedure TfrmWikiLocal.actSearchNextExecute(Sender: TObject);
+begin
+  if panSearch.Visible then
+    hvMainView.FindEx(txtSearchText.Text,cbCaseSensitive.checked,false);
+end;
+
+procedure TfrmWikiLocal.actSearchPrevExecute(Sender: TObject);
+begin
+  if panSearch.Visible then
+    hvMainView.FindEx(txtSearchText.Text,cbCaseSensitive.checked,true);
 end;
 
 procedure TfrmWikiLocal.actSideBarLinksExecute(Sender: TObject);

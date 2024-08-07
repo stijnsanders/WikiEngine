@@ -1,14 +1,14 @@
 wikiparse 2
 /*
-	WikiParse XML to mimic PmWiki
-	version 2.0.0.65
-	by Stijn Sanders <stijn@yoy.be>
-	2024-01
+WikiEngine rule set to mimic PmWiki
+version 2.0.0.65
+by Stijn Sanders <stijn@yoy.be>
+2014,2024
 
-	When adapting for own use, change relative URL prefixes in "LocalURLs" below
+When adapting for own use, change relative URL prefixes in "LocalURLs" below
 
-	Incoming text is first parsed to extract [= =] sections,
-	WikiLink's are extracted, and then other layout is transformed to HTML.
+Incoming text is first parsed to extract [= =] sections,
+WikiLink's are extracted, and then other layout is transformed to HTML.
 */
 jump Start
 

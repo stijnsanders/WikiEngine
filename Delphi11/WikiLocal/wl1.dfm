@@ -94,19 +94,19 @@ object frmWikiLocal: TfrmWikiLocal
       Left = 0
       Top = 35
       Width = 185
-      Height = 137
+      Height = 149
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
       Visible = False
       DesignSize = (
         185
-        137)
+        149)
       object lblMatchCount: TLabel
         Left = 0
-        Top = 113
+        Top = 121
         Width = 179
-        Height = 16
+        Height = 24
         Anchors = [akLeft, akTop, akRight]
         AutoSize = False
         Caption = '...'
@@ -125,23 +125,23 @@ object frmWikiLocal: TfrmWikiLocal
         Left = 0
         Top = 36
         Width = 179
-        Height = 17
+        Height = 21
         Anchors = [akLeft, akTop, akRight]
         Caption = '&Regular Expression'
         TabOrder = 1
       end
       object cbCaseSensitive: TCheckBox
         Left = 0
-        Top = 59
+        Top = 63
         Width = 179
-        Height = 17
+        Height = 21
         Anchors = [akLeft, akTop, akRight]
         Caption = '&Case sensitive'
         TabOrder = 2
       end
       object btnSearch: TButton
         Left = 0
-        Top = 82
+        Top = 90
         Width = 179
         Height = 25
         Anchors = [akLeft, akTop, akRight]
@@ -151,8 +151,8 @@ object frmWikiLocal: TfrmWikiLocal
       end
     end
     object tvSideList: TTreeView
-      Left = 8
-      Top = 232
+      Left = 23
+      Top = 316
       Width = 41
       Height = 41
       Anchors = [akLeft, akTop, akRight, akBottom]
@@ -168,8 +168,8 @@ object frmWikiLocal: TfrmWikiLocal
       OnExpanding = tvSideListExpanding
     end
     object hvSideBar: THtmlViewer
-      Left = 8
-      Top = 185
+      Left = 23
+      Top = 269
       Width = 41
       Height = 41
       BorderStyle = htNone
@@ -185,6 +185,7 @@ object frmWikiLocal: TfrmWikiLocal
       PrintScale = 1.000000000000000000
       Text = ''
       OnHotSpotClick = hvMainViewHotSpotClick
+      OnHotSpotCovered = hvMainViewHotSpotCovered
       OnRightClick = hvRightClick
       TabOrder = 2
       TabStop = True
@@ -434,6 +435,16 @@ object frmWikiLocal: TfrmWikiLocal
       Caption = 'Search...'
       ShortCut = 16454
       OnExecute = actSearchExecute
+    end
+    object actSearchNext: TAction
+      Caption = 'Search Next'
+      ShortCut = 114
+      OnExecute = actSearchNextExecute
+    end
+    object actSearchPrev: TAction
+      Caption = 'Search Previous'
+      ShortCut = 8306
+      OnExecute = actSearchPrevExecute
     end
     object actHomePage: TAction
       Caption = 'HomePage'

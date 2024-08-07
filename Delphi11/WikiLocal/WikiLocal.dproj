@@ -72,10 +72,10 @@
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <SanitizedProjectName>WikiLocal</SanitizedProjectName>
         <VerInfo_Locale>2067</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.65;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=be.yoy.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=2.0.0.0;Comments=http://yoy.be/WikiEngine</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.74;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=be.yoy.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=2.0.0.0;Comments=http://yoy.be/WikiEngine</VerInfo_Keys>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
-        <VerInfo_Build>65</VerInfo_Build>
+        <VerInfo_Build>74</VerInfo_Build>
         <DCC_UnitSearchPath>D:\Data\2024\HtmlViewer\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -152,8 +152,8 @@
                     <Source Name="MainSource">WikiLocal.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="4">
