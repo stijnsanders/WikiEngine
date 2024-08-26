@@ -2,7 +2,7 @@ wikiparse 2
 /*
 pmwiki.wrs
 WikiEngine rule set to mimic PmWiki
-version 2.0.0.65
+version 2.0.0.74
 by Stijn Sanders <stijn@yoy.be>
 2014,2024
 
@@ -167,14 +167,14 @@ label Start
 								inbetween
 								
 									//Other prefixed things
-									extract ([A-Za-z][A-Za-z0-9_]*:)[-_\.'\*\+\(\)?&=#:;/A-Z0-9]+
+									extract ([A-Za-z][A-Za-z0-9_]*:)[-_\.'\*\+\(\)?&=#:;/A-Za-z0-9]+
 										prefix %F%
 										match
 											//Check SisterWiki prefixes
 											include sisterwikis.wrs
 											jump ParseLink
 										inbetween
-										
+
 											//Ignore codes within color tags
 											extract %[a-z0-9=#]{3,}?%
 												prefix %G%

@@ -263,6 +263,8 @@ type
     function Perform(Engine:TWikiEngine;const Data:string):string; override;
   end;
 
+  EWikiEngineDebugBreak=class(Exception);//TODO: move into interface section?
+
   TpeDebugBreak=class(TParseEntry)
   public
     function Perform(Engine:TWikiEngine;const Data:string):string; override;
@@ -1677,7 +1679,7 @@ end;
 
 function TpeDebugBreak.Perform(Engine:TWikiEngine;const Data:string):string;
 begin
-  raise Exception.Create(FStackLine+':"'+Data+'"');
+  raise EWikiEngineDebugBreak.Create(FStackLine+':"'+Data+'"');
 end;
 
 { TpeDebugStep }
