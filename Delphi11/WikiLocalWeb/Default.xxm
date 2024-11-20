@@ -1,0 +1,28 @@
+[[@xxmp]][[!var
+
+p,x:string;
+
+]][[
+
+//if not Debug then x:='' else
+x:='&x='+FormatDateTime('hhnnsszzz',Now);
+//x:='&x=40';
+
+<<!doctype html>
+<html>
+<head>
+<title>WikiLocal</title>
+<link rel="stylesheet" href="wiki.css?v=1[[#x]]" />
+</head>
+<body>
+<div id="titlebar">WikiLocal &ndash; <span id="titlewiki"></span></div>
+<div id="sidebar"></div>
+<div id="mainbox"></div>
+<iframe id="r1" style="display:none;"></iframe>
+<iframe id="r2" style="display:none;"></iframe>
+<script src="wiki.js?v=1[[#x]]"></script>>
+p:=Context.ContextString(csLocalURL);
+if p='' then p:=DefaultWikiGroup+'.HomePage';
+<<script>wikiGo("[[=StringReplace(p,'"','\"',[rfReplaceAll])]]");</script>
+</body>
+</html>

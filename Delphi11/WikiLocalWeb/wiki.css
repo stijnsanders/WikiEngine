@@ -1,0 +1,108 @@
+BODY{
+	font-family: sans-serif;
+	font-size: 4mm;
+}
+
+#titlebar{
+	position:fixed;
+	top:0;
+	left:0;
+	height:10mm;
+	overflow:hidden;
+	width:100vw;
+	background-color: #CCCCFF;
+	font-weight:bold;
+	font-size:7mm;
+	padding:2mm 2mm 2mm 5mm;
+}
+
+#sidebar{
+	position:fixed;
+	top:0;
+	left:0;
+	width:50mm;
+	height:100vh;
+	padding:16mm 5mm 5mm 5mm;
+	overflow:hidden;
+}
+
+#mainbox{
+	margin:14mm 0 0 60mm;
+	padding:2mm 2mm 5mm 2mm;
+}
+
+P{margin:0mm 0mm 4mm 0mm;}
+
+H1 {margin-top:0.2em;padding:0.2em;margin-bottom:0.2em;font-size: 16pt;background-color:#EEEEFF;}
+H2 {margin-top:0.2em;padding:0.2em;margin-bottom:0.2em;font-size: 14pt;background-color:#EEEEFF;}
+H3 {margin-top:0.2em;padding:0.2em;margin-bottom:0.2em;font-size: 12pt;background-color:#EEEEFF;}
+H4 {margin-top:0.2em;padding:0.2em;margin-bottom:0.2em;font-size: 10pt;background-color:#EEEEFF;}
+HR {height:0px;border-top:3px solid #0000CC;border-left:0px;border-right:0px;border-bottom:0px;}
+DIV.indent {
+	margin-left: 18px;
+}
+TABLE {
+	border-collapse: collapse;
+	border: 1px solid #666666;
+}
+TD {
+	border: 1px solid #999999;
+	font-family: "PT Sans", Calibri, Verdana, sans-serif;
+	padding: 4px;
+	margin: 0px;
+}
+TH {
+	background-color: #EEEEEE;
+	border: 1px solid #999999;
+	font-family: "PT Sans", Calibri, Verdana, sans-serif;
+	padding: 4px;
+	margin: 0px;
+}
+CODE {
+	font-family: Lucida Console, monospace;
+	font-size: 10pt;
+	background-color: #EEEEEE;
+	padding: 1px;
+}
+PRE, XMP {
+	font-family: Lucida Console, monospace;
+	font-size: 10pt;
+	border: 1px dashed #999999;
+	background-color: #EEEEEE;
+	margin-left: 4px;
+	margin-right: 4px;
+	padding: 4px;
+}
+DT {
+	font-weight: bold;
+}
+DD {
+	border-left: 1px solid #999999;
+	border-bottom: 1px solid #999999;
+	padding: 4px;
+	margin-bottom: 4px;
+}
+
+A.wikilink {
+	color: #006600;
+}
+A.wikilink:visited {
+	color: #666600;
+}
+A.wikiedit {
+	color: #003300;
+	border-bottom: 1px dashed #CC0000;
+}
+@media print {
+	H1 {margin-top:1em;padding:0em;}
+	H2 {margin-top:1em;padding:0em;}
+	H3 {margin-top:1em;padding:0em;}
+	H4 {margin-top:1em;padding:0em;}
+	BODY {zoom:80%;}
+	DIV.searchbar {display:none;}
+	DIV.sidebar {display:none;}
+	DIV.wikipage {margin-left:0em;}
+	A.wikilink {text-decoration:none;}
+	A.wikiedit {text-decoration:none;border-bottom:1px dashed #999999;}
+	A.noprint {display:none;}
+}

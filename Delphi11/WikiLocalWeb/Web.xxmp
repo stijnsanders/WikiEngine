@@ -1,0 +1,28 @@
+{
+	"name": "WikiLocal",
+	"compileCommand_BAK": "dcc32 -U[[HandlerPath]]public -Q [[ProjectName]].dpr",
+	"compileCommand": "D:\\Data\\2023\\d\\fixdpb.exe D:\\Data\\2024\\WikiEngine\\Delphi11\\WikiLocalWeb\\src\\WikiLocal.dproj",
+	"files": {
+		"default_xxm": {
+			"path": "Default.xxm",
+			"unitName": "default_xxm1",
+			"unitPath": ""
+		},
+		"page_xxm": {
+			"path": "Page.xxm",
+			"unitName": "page_xxm1",
+			"unitPath": ""
+		}
+	},
+	"units": {
+		"Link": {},
+		"we2": {
+			"unitPath": "../WikiEng2/"
+		}
+	},
+	"resources": {
+		"xxmp.pas": {}
+	},
+	"lastModified": "2024-11-09T01:11:04",
+	"uuid": "{646D8DF2-DF0C-4E89-9B74-A692C9368212}"
+}
